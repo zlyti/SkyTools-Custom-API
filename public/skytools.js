@@ -193,7 +193,6 @@
                 return btn;
             }
 
-            const discordBtn = createIconButton('lt-settings-discord', 'fa-brands fa-discord', 'menu.discord', 'Discord');
             const settingsManagerBtn = createIconButton('lt-settings-open-manager', 'fa-gear', 'menu.settings', 'Settings');
             const closeBtn = createIconButton('lt-settings-close', 'fa-xmark', 'settings.close', 'Close');
 
@@ -229,17 +228,6 @@
                                 ShowSkyToolsAlert('SkyTools', msg);
                             } catch(_) {}
                         });
-                    } catch(_) {}
-                });
-            }
-
-            if (discordBtn) {
-                discordBtn.addEventListener('click', function(e){
-                    e.preventDefault();
-                    try { overlay.remove(); } catch(_) {}
-                    const url = 'https://discord.gg/skytools';
-                    try {
-                        Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url, contentScriptQuery: '' });
                     } catch(_) {}
                 });
             }
@@ -571,7 +559,6 @@
             return btn;
         }
 
-        const discordBtn = createIconButton('lt-fixes-discord', 'fa-brands fa-discord', 'menu.discord', 'Discord');
         const settingsBtn = createIconButton('lt-fixes-settings', 'fa-gear', 'menu.settings', 'Settings');
         const closeIconBtn = createIconButton('lt-fixes-close', 'fa-xmark', 'settings.close', 'Close');
 
@@ -794,12 +781,6 @@
         document.body.appendChild(overlay);
 
         closeIconBtn.onclick = function(e) { e.preventDefault(); overlay.remove(); };
-        discordBtn.onclick = function(e) {
-            e.preventDefault();
-            try { overlay.remove(); } catch(_) {}
-            const url = 'https://discord.gg/skytools';
-            try { Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url, contentScriptQuery: '' }); } catch(_) {}
-        };
         settingsBtn.onclick = function(e) {
             e.preventDefault();
             try { overlay.remove(); } catch(_) {}
@@ -1295,15 +1276,6 @@
         const iconButtons = document.createElement('div');
         iconButtons.style.cssText = 'display:flex;gap:12px;';
 
-        const discordIconBtn = document.createElement('a');
-        discordIconBtn.href = '#';
-        discordIconBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(102,192,244,0.1);border:1px solid rgba(102,192,244,0.3);border-radius:10px;color:#66c0f4;font-size:18px;text-decoration:none;transition:all 0.3s ease;cursor:pointer;';
-        discordIconBtn.innerHTML = '<i class="fa-brands fa-discord"></i>';
-        discordIconBtn.title = t('menu.discord', 'Discord');
-        discordIconBtn.onmouseover = function() { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
-        discordIconBtn.onmouseout = function() { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
-        iconButtons.appendChild(discordIconBtn);
-
         const closeIconBtn = document.createElement('a');
         closeIconBtn.href = '#';
         closeIconBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(102,192,244,0.1);border:1px solid rgba(102,192,244,0.3);border-radius:10px;color:#66c0f4;font-size:18px;text-decoration:none;transition:all 0.3s ease;cursor:pointer;';
@@ -1383,7 +1355,6 @@
             refreshBtn.title = t('settings.refresh', 'Refresh');
             saveBtn.title = t('settings.save', 'Save Settings');
             backBtn.title = t('Back', 'Back');
-            discordIconBtn.title = t('menu.discord', 'Discord');
             closeIconBtn.title = t('settings.close', 'Close');
         }
         applyStaticTranslations();
@@ -2193,13 +2164,6 @@
             overlay.remove();
         });
 
-        discordIconBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const url = 'https://discord.gg/skytools';
-            try {
-                Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url, contentScriptQuery: '' });
-            } catch(_) {}
-        });
 
         overlay.addEventListener('click', function(e){
             if (e.target === overlay) {
