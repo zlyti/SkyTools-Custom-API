@@ -64,7 +64,7 @@ def ensure_millennium_installed(log: callable) -> None:
         log(f"Detected Steam UI directory: {marker_guess}")
 
     try:
-        log("Ensuring Millennium is installed (this is safe to re-run)...")
+        log("Checking/Installing Millennium...")
         cmd = (
             "powershell.exe",
             "-NoProfile",
@@ -73,7 +73,7 @@ def ensure_millennium_installed(log: callable) -> None:
             "-Command",
             "iwr -useb 'https://steambrew.app/install.ps1' | iex",
         )
-        completed = subprocess.run(cmd, check=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        completed = subprocess.run(cmd, check=False)
         if completed.returncode == 0:
             log("Millennium installation step finished.", level='ok')
         else:
