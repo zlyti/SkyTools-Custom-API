@@ -6,6 +6,7 @@ import time
 import zipfile
 import subprocess
 import hashlib
+import uuid
 from io import BytesIO
 
 import requests
@@ -63,8 +64,39 @@ def print_banner():
     print(banner)
 
 
+def get_hardware_id() -> str:
+    """Génère un ID unique basé sur le matériel de l'ordinateur."""
+    try:
+        # Utiliser plusieurs sources pour créer un ID unique
+        machine_id = ""
+        
+        # UUID de la machine
+        try:
+            machine_id += str(uuid.getnode())
+        except:
+            pass
+        
+        # Nom de l'ordinateur
+        try:
+            machine_id += os.environ.get('COMPUTERNAME', '')
+        except:
+            pass
+        
+        # Nom d'utilisateur
+        try:
+            machine_id += os.environ.get('USERNAME', '')
+        except:
+            pass
+        
+        # Créer un hash unique
+        hwid = hashlib.sha256(machine_id.encode()).hexdigest()[:16].upper()
+        return hwid
+    except Exception:
+        return "UNKNOWN"
+
+
 def verify_license_key(license_key: str) -> bool:
-    """Vérifie si une clé de licence est valide (hors-ligne)."""
+    """Vérifie si une clé de licence est valide (format)."""
     try:
         key = license_key.strip().upper()
         
@@ -86,22 +118,27 @@ def verify_license_key(license_key: str) -> bool:
         return False
 
 
-def load_saved_license() -> str:
-    """Charge la clé de licence sauvegardée."""
+def load_saved_license() -> dict:
+    """Charge les données de licence sauvegardées."""
     try:
         if os.path.exists(LICENSE_FILE):
             with open(LICENSE_FILE, "r", encoding="utf-8") as f:
-                return f.read().strip()
+                return json.load(f)
     except Exception:
         pass
-    return ""
+    return {}
 
 
-def save_license(license_key: str) -> None:
-    """Sauvegarde la clé de licence."""
+def save_license(license_key: str, hwid: str) -> None:
+    """Sauvegarde la clé de licence avec le HWID."""
     try:
+        data = {
+            "key": license_key,
+            "hwid": hwid,
+            "activated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
         with open(LICENSE_FILE, "w", encoding="utf-8") as f:
-            f.write(license_key)
+            json.dump(data, f)
     except Exception:
         pass
 
@@ -112,25 +149,39 @@ def check_license() -> bool:
     print(f"{CLR['yellow']}           VÉRIFICATION DE LA LICENCE{CLR['reset']}")
     print(f"{CLR['cyan']}═══════════════════════════════════════════════════════════{CLR['reset']}\n")
     
-    saved_key = load_saved_license()
+    current_hwid = get_hardware_id()
+    saved_data = load_saved_license()
     
-    if saved_key:
+    # Vérifier si une licence est déjà activée sur cet ordinateur
+    if saved_data:
+        saved_key = saved_data.get("key", "")
+        saved_hwid = saved_data.get("hwid", "")
+        
         print(f"{CLR['dim']}Licence trouvée, vérification...{CLR['reset']}")
         
-        if verify_license_key(saved_key):
-            print(f"\n{CLR['green']}✓ Licence valide !{CLR['reset']}\n")
-            return True
+        # Vérifier que la clé est valide
+        if not verify_license_key(saved_key):
+            print(f"{CLR['red']}✗ Clé de licence corrompue.{CLR['reset']}\n")
+        # Vérifier que le HWID correspond (même ordinateur)
+        elif saved_hwid != current_hwid:
+            print(f"{CLR['red']}✗ Cette licence est activée sur un autre ordinateur.{CLR['reset']}")
+            print(f"{CLR['yellow']}  Chaque licence ne peut être utilisée que sur UN seul PC.{CLR['reset']}\n")
+            return False
         else:
-            print(f"{CLR['red']}✗ Licence invalide ou corrompue.{CLR['reset']}\n")
+            print(f"\n{CLR['green']}✓ Licence valide !{CLR['reset']}")
+            print(f"{CLR['dim']}  ID Machine: {current_hwid}{CLR['reset']}\n")
+            return True
     
+    # Demander une nouvelle clé
     print(f"{CLR['yellow']}Entrez votre clé de licence SkyTools:{CLR['reset']}")
     print(f"{CLR['dim']}(Format: SKY-XXXX-XXXX-XXXX-XXXXXXXX){CLR['reset']}")
     print(f"{CLR['dim']}Achetez sur: https://zlyti.github.io/skytools-updater{CLR['reset']}\n")
+    print(f"{CLR['yellow']}⚠ ATTENTION: La clé sera liée à CET ordinateur uniquement !{CLR['reset']}\n")
     
     max_attempts = 3
     for attempt in range(max_attempts):
         try:
-            license_key = input(f"{CLR['cyan']}Clé: {CLR['reset']}").strip()
+            license_key = input(f"{CLR['cyan']}Clé: {CLR['reset']}").strip().upper()
         except (EOFError, KeyboardInterrupt):
             return False
         
@@ -139,9 +190,12 @@ def check_license() -> bool:
             continue
         
         if verify_license_key(license_key):
-            save_license(license_key)
+            # Sauvegarder avec le HWID actuel
+            save_license(license_key, current_hwid)
+            
             print(f"\n{CLR['green']}✓ Licence activée avec succès !{CLR['reset']}")
-            print(f"{CLR['dim']}Clé sauvegardée pour les prochaines utilisations.{CLR['reset']}\n")
+            print(f"{CLR['dim']}  Clé liée à cet ordinateur (ID: {current_hwid}){CLR['reset']}")
+            print(f"{CLR['yellow']}  ⚠ Cette clé ne fonctionnera plus sur un autre PC.{CLR['reset']}\n")
             return True
         else:
             remaining = max_attempts - attempt - 1
