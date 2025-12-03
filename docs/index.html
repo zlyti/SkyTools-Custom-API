@@ -24,6 +24,7 @@
             --bg-card: #12121a;
             --text: #e0e0e0;
             --text-muted: #888;
+            --success: #00ff88;
         }
 
         body {
@@ -34,7 +35,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -59,9 +59,7 @@
                 radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
                 radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
                 radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
-                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.3), transparent),
-                radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.2), transparent),
-                radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.3), transparent);
+                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.3), transparent);
             background-size: 350px 200px;
             animation: twinkle 5s ease-in-out infinite;
         }
@@ -71,7 +69,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* Navigation */
         nav {
             position: fixed;
             top: 0;
@@ -109,29 +106,12 @@
             font-size: 1.1rem;
             font-weight: 500;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         .nav-links a:hover {
             color: var(--primary);
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -140,7 +120,6 @@
             align-items: center;
             text-align: center;
             padding: 2rem;
-            position: relative;
         }
 
         .hero-content {
@@ -149,14 +128,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero h1 {
@@ -168,19 +141,30 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.1;
         }
 
         .hero .tagline {
             font-size: clamp(1.2rem, 3vw, 1.8rem);
             color: var(--text-muted);
             margin-bottom: 2rem;
-            font-weight: 300;
         }
 
         .hero .highlight {
             color: var(--primary);
             font-weight: 600;
+        }
+
+        .price-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), #00cc6a);
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            padding: 0.5rem 2rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.3);
         }
 
         .cta-buttons {
@@ -204,8 +188,6 @@
             align-items: center;
             gap: 0.75rem;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn-primary {
@@ -219,6 +201,19 @@
             box-shadow: 0 15px 50px rgba(0, 212, 255, 0.5);
         }
 
+        .btn-buy {
+            background: linear-gradient(135deg, var(--success), #00cc6a);
+            color: #000;
+            font-size: 1.4rem;
+            padding: 1.2rem 3rem;
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-buy:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 50px rgba(0, 255, 136, 0.5);
+        }
+
         .btn-secondary {
             background: transparent;
             color: var(--text);
@@ -230,10 +225,10 @@
             transform: translateY(-3px);
         }
 
-        /* Features Section */
-        .features {
+        /* Pricing Section */
+        .pricing {
             padding: 8rem 5%;
-            position: relative;
+            background: linear-gradient(180deg, transparent, rgba(0, 255, 136, 0.03), transparent);
         }
 
         .section-title {
@@ -247,186 +242,218 @@
             background-clip: text;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1400px;
+        .pricing-card {
+            max-width: 500px;
             margin: 0 auto;
-        }
-
-        .feature-card {
-            background: linear-gradient(135deg, var(--bg-card), rgba(30, 30, 45, 0.8));
-            border: 1px solid rgba(0, 212, 255, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem;
-            transition: all 0.4s ease;
+            background: linear-gradient(135deg, var(--bg-card), rgba(30, 30, 45, 0.9));
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 30px;
+            padding: 3rem;
+            text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        .feature-card::before {
-            content: '';
+        .pricing-card::before {
+            content: 'POPULAIRE';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
+            top: 20px;
+            right: -35px;
+            background: var(--accent);
+            color: #fff;
+            padding: 0.5rem 3rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transform: rotate(45deg);
         }
 
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(0, 212, 255, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.15);
-        }
-
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .feature-card h3 {
+        .pricing-card h3 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.4rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
             color: #fff;
         }
 
-        .feature-card p {
+        .pricing-card .price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--success);
+            margin: 1rem 0;
+        }
+
+        .pricing-card .price span {
+            font-size: 1.5rem;
             color: var(--text-muted);
-            line-height: 1.7;
-            font-size: 1.05rem;
         }
 
-        /* How It Works */
-        .how-it-works {
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .pricing-features li i {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        /* How to Buy */
+        .how-to-buy {
             padding: 8rem 5%;
-            background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.03), transparent);
         }
 
-        .steps {
+        .steps-buy {
             display: flex;
             justify-content: center;
-            gap: 3rem;
+            gap: 2rem;
             flex-wrap: wrap;
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
-        .step {
+        .step-buy {
+            flex: 1;
+            min-width: 250px;
+            max-width: 300px;
             text-align: center;
-            max-width: 280px;
-            position: relative;
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
         }
 
-        .step-number {
-            width: 80px;
-            height: 80px;
+        .step-buy-number {
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: #fff;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+            margin: 0 auto 1rem;
         }
 
-        .step h3 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 0.75rem;
+        .step-buy h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
             color: #fff;
         }
 
-        .step p {
+        .step-buy p {
             color: var(--text-muted);
-            font-size: 1.05rem;
+            font-size: 0.95rem;
         }
 
-        /* Download Section */
-        .download {
+        /* Features */
+        .features {
             padding: 8rem 5%;
-            text-align: center;
         }
 
-        .download-box {
-            max-width: 700px;
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
             margin: 0 auto;
-            background: linear-gradient(135deg, var(--bg-card), rgba(30, 30, 45, 0.9));
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 30px;
-            padding: 4rem;
-            position: relative;
-            overflow: hidden;
         }
 
-        .download-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(0, 212, 255, 0.1), transparent 30%);
-            animation: rotate 10s linear infinite;
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
         }
 
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.3);
         }
 
-        .download-box > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .download-box h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #fff, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
-        .download-box p {
-            color: var(--text-muted);
+        .feature-card h3 {
             font-size: 1.2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
         }
 
-        .version-badge {
-            display: inline-block;
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Contact */
+        .contact {
+            padding: 6rem 5%;
+            text-align: center;
+            background: linear-gradient(180deg, transparent, rgba(123, 44, 191, 0.05));
+        }
+
+        .contact-info {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .contact-info h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .contact-info p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-email {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
             background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            padding: 0.5rem 1.5rem;
+            padding: 1rem 2rem;
             border-radius: 50px;
             color: var(--primary);
+            font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 2rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
         }
 
-        /* Footer */
+        .contact-email:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
         footer {
             padding: 3rem 5%;
             text-align: center;
@@ -443,35 +470,11 @@
             text-decoration: none;
         }
 
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-            }
-
-            .steps {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .download-box {
-                padding: 2.5rem 1.5rem;
-            }
+            .nav-links { display: none; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .btn { width: 100%; max-width: 300px; justify-content: center; }
+            .steps-buy { flex-direction: column; align-items: center; }
         }
     </style>
 </head>
@@ -482,26 +485,76 @@
     <nav>
         <a href="#" class="logo">SkyTools</a>
         <ul class="nav-links">
+            <li><a href="#pricing">Acheter</a></li>
             <li><a href="#features">Fonctionnalités</a></li>
-            <li><a href="#how-it-works">Comment ça marche</a></li>
-            <li><a href="#download">Télécharger</a></li>
+            <li><a href="#how-to-buy">Comment ça marche</a></li>
+            <li><a href="#contact">Contact</a></li>
         </ul>
     </nav>
 
     <section class="hero">
         <div class="hero-content">
             <h1>SkyTools</h1>
-            <p class="tagline">Améliorez votre expérience <span class="highlight">Steam</span> en un clic</p>
-            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                Le plugin ultime pour Steam. Installation automatique, mises à jour en un clic, et des fonctionnalités exclusives pour les vrais gamers.
+            <p class="tagline">Le plugin ultime pour <span class="highlight">Steam</span></p>
+            <div class="price-tag">24,99€</div>
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 1rem auto;">
+                Licence à vie • Mises à jour gratuites • Support inclus
             </p>
             <div class="cta-buttons">
-                <a href="https://github.com/zlyti/skytools-updater/releases/latest/download/SkyTools-Installer.exe" class="btn btn-primary">
-                    <i class="fas fa-download"></i> Télécharger Gratuit
+                <a href="#pricing" class="btn btn-buy">
+                    <i class="fas fa-shopping-cart"></i> Acheter Maintenant
                 </a>
                 <a href="https://github.com/zlyti/skytools-updater" class="btn btn-secondary">
-                    <i class="fab fa-github"></i> Voir sur GitHub
+                    <i class="fab fa-github"></i> GitHub
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <h2 class="section-title">Offre Unique</h2>
+        <div class="pricing-card">
+            <h3>SkyTools Premium</h3>
+            <div class="price">24,99€ <span>/ à vie</span></div>
+            <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Licence à vie (paiement unique)</li>
+                <li><i class="fas fa-check"></i> Toutes les mises à jour gratuites</li>
+                <li><i class="fas fa-check"></i> Installation automatique</li>
+                <li><i class="fas fa-check"></i> Support par email</li>
+                <li><i class="fas fa-check"></i> Menu de Fixes intégré</li>
+                <li><i class="fas fa-check"></i> 20+ langues supportées</li>
+            </ul>
+            <a href="https://www.paypal.me/VOTRE_PAYPAL/24.99EUR" class="btn btn-buy" style="width: 100%;">
+                <i class="fab fa-paypal"></i> Payer avec PayPal
+            </a>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                Après paiement, envoyez une capture d'écran à l'adresse ci-dessous pour recevoir votre clé.
+            </p>
+        </div>
+    </section>
+
+    <section class="how-to-buy" id="how-to-buy">
+        <h2 class="section-title">Comment Acheter</h2>
+        <div class="steps-buy">
+            <div class="step-buy">
+                <div class="step-buy-number">1</div>
+                <h3>Payez</h3>
+                <p>Cliquez sur "Payer avec PayPal" et effectuez le paiement de 24,99€</p>
+            </div>
+            <div class="step-buy">
+                <div class="step-buy-number">2</div>
+                <h3>Envoyez la preuve</h3>
+                <p>Envoyez une capture d'écran du paiement par email</p>
+            </div>
+            <div class="step-buy">
+                <div class="step-buy-number">3</div>
+                <h3>Recevez votre clé</h3>
+                <p>Vous recevrez votre clé de licence par email sous 24h</p>
+            </div>
+            <div class="step-buy">
+                <div class="step-buy-number">4</div>
+                <h3>Installez</h3>
+                <p>Téléchargez l'installateur, entrez votre clé, et profitez !</p>
             </div>
         </div>
     </section>
@@ -510,95 +563,64 @@
         <h2 class="section-title">Fonctionnalités</h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h3>Installation Automatique</h3>
-                <p>Un seul clic suffit. SkyTools installe automatiquement tout ce dont vous avez besoin, y compris Millennium.</p>
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3>Installation Auto</h3>
+                <p>Un clic suffit pour tout installer, y compris Millennium</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-sync-alt"></i>
-                </div>
-                <h3>Mises à Jour Auto</h3>
-                <p>Restez toujours à jour. SkyTools vérifie et installe automatiquement les dernières versions.</p>
+                <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+                <h3>Mises à Jour</h3>
+                <p>Mises à jour automatiques incluses à vie</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-wrench"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-wrench"></i></div>
                 <h3>Menu de Fixes</h3>
-                <p>Accédez à des corrections et améliorations pour vos jeux directement depuis Steam.</p>
+                <p>Corrections et améliorations pour vos jeux</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-globe"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-globe"></i></div>
                 <h3>Multi-Langues</h3>
-                <p>Interface disponible en 20+ langues. Français, anglais, espagnol, et bien plus encore.</p>
+                <p>Interface en 20+ langues</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
                 <h3>Sécurisé</h3>
-                <p>Code open source sur GitHub. Transparent, vérifiable, et maintenu par la communauté.</p>
+                <p>Code vérifié et sécurisé</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-feather-alt"></i>
-                </div>
-                <h3>Léger</h3>
-                <p>Aucun impact sur les performances de Steam. Fonctionne silencieusement en arrière-plan.</p>
+                <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                <h3>Support</h3>
+                <p>Support par email inclus</p>
             </div>
         </div>
     </section>
 
-    <section class="how-it-works" id="how-it-works">
-        <h2 class="section-title">Comment ça marche</h2>
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Téléchargez</h3>
-                <p>Récupérez l'installateur SkyTools depuis cette page</p>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Exécutez</h3>
-                <p>Lancez le fichier .exe - tout est automatique</p>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Profitez</h3>
-                <p>Steam redémarre et SkyTools est prêt à l'emploi</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="download" id="download">
-        <div class="download-box">
-            <h2>Prêt à commencer ?</h2>
-            <p>Téléchargez SkyTools gratuitement et transformez votre Steam</p>
-            <div class="version-badge">
-                <i class="fas fa-tag"></i> Version 6.4.1
-            </div>
-            <br><br>
-            <a href="https://github.com/zlyti/skytools-updater/releases/latest/download/SkyTools-Installer.exe" class="btn btn-primary" style="font-size: 1.4rem; padding: 1.2rem 3rem;">
-                <i class="fas fa-download"></i> Télécharger SkyTools
+    <section class="contact" id="contact">
+        <div class="contact-info">
+            <h3><i class="fas fa-envelope"></i> Contact & Support</h3>
+            <p>Pour acheter, envoyer votre preuve de paiement, ou pour toute question :</p>
+            <a href="mailto:votre@email.com" class="contact-email">
+                <i class="fas fa-envelope"></i> votre@email.com
             </a>
-            <p style="margin-top: 1.5rem; font-size: 0.95rem;">
-                Windows 10/11 • Gratuit • Open Source
+            <p style="margin-top: 2rem; font-size: 0.9rem;">
+                Réponse garantie sous 24h • Support en français
             </p>
         </div>
+    </section>
+
+    <section style="padding: 4rem 5%; text-align: center;">
+        <h2 class="section-title">Télécharger l'Installateur</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Une fois votre clé reçue, téléchargez l'installateur :</p>
+        <a href="https://github.com/zlyti/skytools-updater/releases/latest/download/SkyTools-Installer.exe" class="btn btn-primary">
+            <i class="fas fa-download"></i> Télécharger SkyTools-Installer.exe
+        </a>
     </section>
 
     <footer>
         <p>
             © 2025 SkyTools by <a href="https://github.com/zlyti">zlyti</a> • 
-            <a href="https://github.com/zlyti/skytools-updater">Code Source</a> • 
             Non affilié à Valve Corporation
         </p>
     </footer>
 </body>
 </html>
-

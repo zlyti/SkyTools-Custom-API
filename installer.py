@@ -5,6 +5,7 @@ import sys
 import time
 import zipfile
 import subprocess
+import hashlib
 from io import BytesIO
 
 import requests
@@ -12,6 +13,10 @@ import requests
 
 GITHUB_API = "https://api.github.com"
 DEFAULT_UPDATE_JSON_RELATIVE = os.path.join("backend", "update.json")
+
+# ============== LICENSE CONFIGURATION ==============
+SECRET_KEY = "SKYTOOLS_2025_ZLYTI_SECRET"
+LICENSE_FILE = os.path.join(os.path.expanduser("~"), ".skytools_license")
 
 # --------------- Pretty logging ---------------
 ENABLE_COLOR = sys.stdout.isatty()
@@ -22,6 +27,7 @@ CLR = {
     'green': "\033[32m" if ENABLE_COLOR else "",
     'yellow': "\033[33m" if ENABLE_COLOR else "",
     'red': "\033[31m" if ENABLE_COLOR else "",
+    'magenta': "\033[35m" if ENABLE_COLOR else "",
 }
 
 
@@ -35,16 +41,122 @@ def log_to_widget(widget, message: str, level: str = 'info') -> None:
     }.get(level, f"{CLR['cyan']}INFO{CLR['reset']}")
     line = f"[{ts}] {badge} {message}\n"
     try:
-        # Always print to stdout for CLI usage
         print(line, end="")
     except Exception:
         print(line, end="")
 
 
+def print_banner():
+    banner = f"""
+{CLR['cyan']}╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║   {CLR['magenta']}███████╗██╗  ██╗██╗   ██╗████████╗ ██████╗  ██████╗ ██╗     ███████╗{CLR['cyan']}
+║   {CLR['magenta']}██╔════╝██║ ██╔╝╚██╗ ██╔╝╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝{CLR['cyan']}
+║   {CLR['magenta']}███████╗█████╔╝  ╚████╔╝    ██║   ██║   ██║██║   ██║██║     ███████╗{CLR['cyan']}
+║   {CLR['magenta']}╚════██║██╔═██╗   ╚██╔╝     ██║   ██║   ██║██║   ██║██║     ╚════██║{CLR['cyan']}
+║   {CLR['magenta']}███████║██║  ██╗   ██║      ██║   ╚██████╔╝╚██████╔╝███████╗███████║{CLR['cyan']}
+║   {CLR['magenta']}╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝{CLR['cyan']}
+║                                                           ║
+║              {CLR['green']}Steam Plugin Installer v1.0{CLR['cyan']}                  ║
+╚═══════════════════════════════════════════════════════════╝{CLR['reset']}
+"""
+    print(banner)
+
+
+def verify_license_key(license_key: str) -> bool:
+    """Vérifie si une clé de licence est valide (hors-ligne)."""
+    try:
+        key = license_key.strip().upper()
+        
+        if not key.startswith("SKY-"):
+            return False
+        
+        parts = key.split("-")
+        if len(parts) != 5:
+            return False
+        
+        random_part = parts[1] + parts[2] + parts[3]
+        provided_hash = parts[4]
+        
+        data = f"{random_part}{SECRET_KEY}"
+        expected_hash = hashlib.sha256(data.encode()).hexdigest()[:8].upper()
+        
+        return provided_hash == expected_hash
+    except Exception:
+        return False
+
+
+def load_saved_license() -> str:
+    """Charge la clé de licence sauvegardée."""
+    try:
+        if os.path.exists(LICENSE_FILE):
+            with open(LICENSE_FILE, "r", encoding="utf-8") as f:
+                return f.read().strip()
+    except Exception:
+        pass
+    return ""
+
+
+def save_license(license_key: str) -> None:
+    """Sauvegarde la clé de licence."""
+    try:
+        with open(LICENSE_FILE, "w", encoding="utf-8") as f:
+            f.write(license_key)
+    except Exception:
+        pass
+
+
+def check_license() -> bool:
+    """Vérifie si l'utilisateur a une licence valide."""
+    print(f"\n{CLR['cyan']}═══════════════════════════════════════════════════════════{CLR['reset']}")
+    print(f"{CLR['yellow']}           VÉRIFICATION DE LA LICENCE{CLR['reset']}")
+    print(f"{CLR['cyan']}═══════════════════════════════════════════════════════════{CLR['reset']}\n")
+    
+    saved_key = load_saved_license()
+    
+    if saved_key:
+        print(f"{CLR['dim']}Licence trouvée, vérification...{CLR['reset']}")
+        
+        if verify_license_key(saved_key):
+            print(f"\n{CLR['green']}✓ Licence valide !{CLR['reset']}\n")
+            return True
+        else:
+            print(f"{CLR['red']}✗ Licence invalide ou corrompue.{CLR['reset']}\n")
+    
+    print(f"{CLR['yellow']}Entrez votre clé de licence SkyTools:{CLR['reset']}")
+    print(f"{CLR['dim']}(Format: SKY-XXXX-XXXX-XXXX-XXXXXXXX){CLR['reset']}")
+    print(f"{CLR['dim']}Achetez sur: https://zlyti.github.io/skytools-updater{CLR['reset']}\n")
+    
+    max_attempts = 3
+    for attempt in range(max_attempts):
+        try:
+            license_key = input(f"{CLR['cyan']}Clé: {CLR['reset']}").strip()
+        except (EOFError, KeyboardInterrupt):
+            return False
+        
+        if not license_key:
+            print(f"{CLR['red']}Aucune clé entrée.{CLR['reset']}")
+            continue
+        
+        if verify_license_key(license_key):
+            save_license(license_key)
+            print(f"\n{CLR['green']}✓ Licence activée avec succès !{CLR['reset']}")
+            print(f"{CLR['dim']}Clé sauvegardée pour les prochaines utilisations.{CLR['reset']}\n")
+            return True
+        else:
+            remaining = max_attempts - attempt - 1
+            if remaining > 0:
+                print(f"{CLR['red']}✗ Clé invalide. {remaining} tentative(s) restante(s).{CLR['reset']}\n")
+            else:
+                print(f"{CLR['red']}✗ Clé invalide. Plus de tentatives.{CLR['reset']}\n")
+    
+    return False
+
+
 def detect_steam_path() -> str:
     steam_path = None
     try:
-        import winreg  # type: ignore
+        import winreg
 
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam") as key:
             steam_path, _ = winreg.QueryValueEx(key, "SteamPath")
@@ -87,11 +199,10 @@ def read_update_config(config_path: str) -> dict:
         with open(config_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception:
-        # Fallback default matching repo layout
         return {
             "github": {
                 "owner": "zlyti",
-                "repo": "skytools-steam-plugin",
+                "repo": "skytools-updater",
                 "asset_name": "skytools-steam-plugin.zip",
             }
         }
@@ -159,7 +270,6 @@ def find_plugin_targets(steam_path: str, log: callable) -> list[str]:
     if matches:
         log(f"Found {len(matches)} SkyTools plugin location(s)")
         return matches
-    # Fallback: create default target
     target = os.path.join(plugins_dir, "ST-Steam_Plugin")
     os.makedirs(target, exist_ok=True)
     log(f"No existing SkyTools plugin found; using {target}")
@@ -218,20 +328,40 @@ def restart_steam(steam_path: str, log: callable) -> None:
 
 def wait_for_keypress(prompt: str = "Press any key to continue...") -> None:
     try:
-        import msvcrt  # type: ignore
+        import msvcrt
         print(prompt)
         msvcrt.getch()
     except Exception:
-        # Fallback
         input(prompt)
 
+
 if __name__ == "__main__":
-    # Pure CLI entrypoint
+    print_banner()
+    
+    # Vérification de la licence
+    if not check_license():
+        print(f"\n{CLR['red']}════════════════════════════════════════════════════════{CLR['reset']}")
+        print(f"{CLR['red']}  LICENCE INVALIDE - Installation impossible{CLR['reset']}")
+        print(f"{CLR['red']}════════════════════════════════════════════════════════{CLR['reset']}")
+        print(f"\n{CLR['yellow']}Achetez SkyTools sur:{CLR['reset']}")
+        print(f"{CLR['cyan']}https://zlyti.github.io/skytools-updater{CLR['reset']}\n")
+        wait_for_keypress("Appuyez sur une touche pour fermer...")
+        sys.exit(1)
+    
+    print(f"{CLR['cyan']}═══════════════════════════════════════════════════════════{CLR['reset']}")
+    print(f"{CLR['yellow']}              INSTALLATION DE SKYTOOLS{CLR['reset']}")
+    print(f"{CLR['cyan']}═══════════════════════════════════════════════════════════{CLR['reset']}\n")
+    
     steam_path = do_install(None)
+    
     if steam_path:
         print()
-        print(f"{CLR['green']}Done!{CLR['reset']} {CLR['dim']}Press any key to restart Steam and apply changes!{CLR['reset']}")
+        print(f"{CLR['green']}═══════════════════════════════════════════════════════════{CLR['reset']}")
+        print(f"{CLR['green']}              INSTALLATION RÉUSSIE !{CLR['reset']}")
+        print(f"{CLR['green']}═══════════════════════════════════════════════════════════{CLR['reset']}")
+        print(f"\n{CLR['dim']}Appuyez sur une touche pour redémarrer Steam...{CLR['reset']}")
         wait_for_keypress("")
         restart_steam(steam_path, lambda m, level='info': log_to_widget(None, m, level))
-
-
+    else:
+        print(f"\n{CLR['red']}L'installation a échoué.{CLR['reset']}")
+        wait_for_keypress("Appuyez sur une touche pour fermer...")
