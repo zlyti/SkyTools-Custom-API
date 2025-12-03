@@ -734,25 +734,6 @@
             unfixSection.querySelector('a').style.cursor = 'not-allowed';
         }
 
-        // Credit message
-        const creditMsg = document.createElement('div');
-        creditMsg.style.cssText = 'margin-top:16px;text-align:center;font-size:13px;color:#8f98a0;';
-        const creditTemplate = lt('Only possible thanks to {name} 💜');
-        creditMsg.innerHTML = creditTemplate.replace('{name}', '<a href="#" id="lt-shayenvi-link" style="color:#66c0f4;text-decoration:none;font-weight:600;">ShayneVi</a>');
-        
-        // Wire up ShayneVi link
-        setTimeout(function(){
-            const shayenviLink = overlay.querySelector('#lt-shayenvi-link');
-            if (shayenviLink) {
-                shayenviLink.addEventListener('click', function(e){
-                    e.preventDefault();
-                    try {
-                        Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url: 'https://github.com/ShayneVi/', contentScriptQuery: '' });
-                    } catch(_) {}
-                });
-            }
-        }, 0);
-
         // body moment
         gameHeader.appendChild(gameIcon);
         gameHeader.appendChild(gameName);
@@ -768,7 +749,6 @@
         columnsContainer.appendChild(leftColumn);
         columnsContainer.appendChild(rightColumn);
         contentContainer.appendChild(columnsContainer);
-        contentContainer.appendChild(creditMsg);
         body.appendChild(contentContainer);
 
         // header moment
