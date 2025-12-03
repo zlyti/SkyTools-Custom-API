@@ -175,7 +175,7 @@ def check_license() -> bool:
     # Demander une nouvelle clé
     print(f"{CLR['yellow']}Entrez votre clé de licence SkyTools:{CLR['reset']}")
     print(f"{CLR['dim']}(Format: SKY-XXXX-XXXX-XXXX-XXXXXXXX){CLR['reset']}")
-    print(f"{CLR['dim']}Achetez sur: https://zlyti.github.io/skytools-updater{CLR['reset']}\n")
+    print(f"{CLR['dim']}Achetez sur: https://skytools.store{CLR['reset']}\n")
     print(f"{CLR['yellow']}⚠ ATTENTION: La clé sera liée à CET ordinateur uniquement !{CLR['reset']}\n")
     
     max_attempts = 3
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         print(f"{CLR['red']}  LICENCE INVALIDE - Installation impossible{CLR['reset']}")
         print(f"{CLR['red']}════════════════════════════════════════════════════════{CLR['reset']}")
         print(f"\n{CLR['yellow']}Achetez SkyTools sur:{CLR['reset']}")
-        print(f"{CLR['cyan']}https://zlyti.github.io/skytools-updater{CLR['reset']}\n")
+        print(f"{CLR['cyan']}https://skytools.store{CLR['reset']}\n")
         wait_for_keypress("Appuyez sur une touche pour fermer...")
         sys.exit(1)
     
