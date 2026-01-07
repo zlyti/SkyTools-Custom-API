@@ -86,6 +86,7 @@ def init_apis(content_script_query: str = "") -> str:
     _INIT_APIS_LAST_MESSAGE = message
     
     # Also init metadata
+    # Also init metadata
     try:
         init_metadata()
     except Exception:
