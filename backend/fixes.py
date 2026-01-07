@@ -58,7 +58,7 @@ def check_for_fixes(appid: int) -> str:
         "gameName": "",
         "genericFix": {"status": 0, "available": False},
         "onlineFix": {"status": 0, "available": False},
-        "freeTp": {"status": 0, "available": False},
+        "freeTp": {"status": 0, "available": False, "url": ""},
     }
 
     try:
@@ -86,18 +86,40 @@ def check_for_fixes(appid: int) -> str:
         result["onlineFix"]["available"] = resp.status_code == 200
         if resp.status_code == 200:
             result["onlineFix"]["url"] = online_url
+            # Fallback for FreeTP if official online fix exists
             result["freeTp"]["status"] = 200
             result["freeTp"]["available"] = True
             result["freeTp"]["url"] = online_url
-        else:
-            result["freeTp"]["status"] = resp.status_code
-            result["freeTp"]["available"] = False
     except Exception as exc:
         logger.warn(f"LuaTools: Online-fix check failed for {appid}: {exc}")
         if result["onlineFix"]["status"] == 0:
             result["onlineFix"]["status"] = 0
-        if result["freeTp"]["status"] == 0:
-            result["freeTp"]["status"] = 0
+
+    # Custom FreeTP Repos check (SkyTools Specific)
+    try:
+        from api_manifest import load_api_manifest
+        apis = load_api_manifest()
+        
+        # Check Custom Repo for {appid}_freetp.zip first
+        for api in apis:
+            name = api.get("name", "Unknown")
+            if "Alucard" in name or "Custom" in name:
+                template = api.get("url", "")
+                # Pattern: {appid}_freetp.zip instead of just {appid}.zip
+                freetp_url = template.replace("<appid>.zip", f"{appid}_freetp.zip")
+                if freetp_url == template: # Replacement failed, try appending
+                     freetp_url = template.replace("<appid>", f"{appid}_freetp")
+                
+                logger.log(f"SkyTools: Checking Custom FreeTP at {freetp_url}")
+                resp = client.head(freetp_url, follow_redirects=True, timeout=10)
+                if resp.status_code == 200:
+                    result["freeTp"]["status"] = 200
+                    result["freeTp"]["available"] = True
+                    result["freeTp"]["url"] = freetp_url
+                    logger.log(f"SkyTools: Found Custom FreeTP Fix for {appid}!")
+                    break
+    except Exception as e:
+        logger.warn(f"SkyTools: Custom FreeTP check failed: {e}")
 
     return json.dumps(result)
 
