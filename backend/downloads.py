@@ -454,10 +454,6 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             processed_lines.insert(0, f"setAppID({appid})\n")
             
         processed_text = "".join(processed_lines)
-        
-        # INLINE TRANSLATION: Convert SteamTools 'addappid(id)' to Millennium 'Steam.AppId_Add(id)'
-        # This prevents crashes without needing external compatibility files.
-        processed_text = re.sub(r'addappid\s*\(\s*(\d+).*?\)', r'Steam.AppId_Add(\1)', processed_text, flags=re.IGNORECASE)
 
         _set_download_state(appid, {"status": "installing"})
         dest_file = os.path.join(target_dir, f"{appid}.lua")

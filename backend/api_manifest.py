@@ -40,18 +40,23 @@ def init_apis(content_script_query: str = "") -> str:
     api_json_path = backend_path(API_JSON_FILE)
     message = ""
 
-    manifest_text = ""
-    # Try primary URL first
-    try:
-        logger.log(f"InitApis: Fetching latest manifest from {API_MANIFEST_URL}")
-        resp = client.get(API_MANIFEST_URL)
-        resp.raise_for_status()
-        manifest_text = resp.text
-        logger.log(
-            f"InitApis: Fetched manifest, status={resp.status_code}, length={len(manifest_text)}"
-        )
-    except Exception as primary_err:
-        logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
+    if os.path.exists(api_json_path):
+        logger.log(f"InitApis: Local file exists -> {api_json_path}; skipping remote fetch")
+    else:
+        logger.log(f"InitApis: Local file not found -> {api_json_path}")
+        manifest_text = ""
+        try:
+            # Try primary URL first
+            try:
+                logger.log(f"InitApis: Fetching latest manifest from {API_MANIFEST_URL}")
+                resp = client.get(API_MANIFEST_URL)
+                resp.raise_for_status()
+                manifest_text = resp.text
+                logger.log(
+                    f"InitApis: Fetched manifest, status={resp.status_code}, length={len(manifest_text)}"
+                )
+            except Exception as primary_err:
+                logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
         try:
             logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
             resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
