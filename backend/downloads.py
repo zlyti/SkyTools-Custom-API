@@ -414,24 +414,6 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         except Exception:
             text = data.decode("utf-8", errors="replace")
 
-        # --- Sanitize Morrenus/Koalageddon Files ---
-        # Detect "addappid(xyz, ...)" which causes crashes in Millennium
-        if "addappid" in text:
-            logger.log(f"SkyTools: Detected 'addappid' in {appid}.lua - Sanitizing content...")
-            dlc_ids = set()
-            for match in re.finditer(r"addappid\(\s*(\d+)", text):
-                dlc_ids.add(int(match.group(1)))
-            
-            # Reconstruct a clean file
-            new_lines = [f"setAppID({appid})\n"]
-            for dlc in sorted(dlc_ids):
-                new_lines.append(f"Steam.AppId_Add({dlc})\n")
-            
-            text = "".join(new_lines)
-            logger.log(f"SkyTools: Sanitized {len(dlc_ids)} DLCs for {appid}")
-        # -------------------------------------------
-
-
         # Metadata Injection (Master Plan 2.0)
         metadata = load_metadata()
         token = metadata.get("tokens", {}).get(str(appid))
