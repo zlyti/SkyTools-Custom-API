@@ -646,7 +646,7 @@
             function (e) {
                 e.preventDefault();
                 if (genericStatus === 200 && isGameInstalled) {
-                    const genericUrl = 'https://files.skytools.work/GameBypasses/' + data.appid + '.zip';
+                    const genericUrl = 'https://files.luatools.work/GameBypasses/' + data.appid + '.zip';
                     applyFix(data.appid, genericUrl, lt('Generic Fix'), data.gameName, overlay);
                 }
             }
@@ -667,7 +667,7 @@
             function (e) {
                 e.preventDefault();
                 if (onlineStatus === 200 && isGameInstalled) {
-                    const onlineUrl = data.onlineFix.url || ('https://files.skytools.work/OnlineFix1/' + data.appid + '.zip');
+                    const onlineUrl = data.onlineFix.url || ('https://files.luatools.work/OnlineFix1/' + data.appid + '.zip');
                     applyFix(data.appid, onlineUrl, lt('Online Fix'), data.gameName, overlay);
                 }
             }

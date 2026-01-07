@@ -58,6 +58,7 @@ def check_for_fixes(appid: int) -> str:
         "gameName": "",
         "genericFix": {"status": 0, "available": False},
         "onlineFix": {"status": 0, "available": False},
+        "freeTp": {"status": 0, "available": False},
     }
 
     try:
@@ -85,10 +86,18 @@ def check_for_fixes(appid: int) -> str:
         result["onlineFix"]["available"] = resp.status_code == 200
         if resp.status_code == 200:
             result["onlineFix"]["url"] = online_url
+            result["freeTp"]["status"] = 200
+            result["freeTp"]["available"] = True
+            result["freeTp"]["url"] = online_url
+        else:
+            result["freeTp"]["status"] = resp.status_code
+            result["freeTp"]["available"] = False
     except Exception as exc:
         logger.warn(f"LuaTools: Online-fix check failed for {appid}: {exc}")
         if result["onlineFix"]["status"] == 0:
             result["onlineFix"]["status"] = 0
+        if result["freeTp"]["status"] == 0:
+            result["freeTp"]["status"] = 0
 
     return json.dumps(result)
 
