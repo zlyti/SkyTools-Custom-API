@@ -39,12 +39,12 @@ def init_apis(content_script_query: str = "") -> str:
     client = ensure_http_client("InitApis")
     api_json_path = backend_path(API_JSON_FILE)
     message = ""
+    manifest_text = ""
 
     if os.path.exists(api_json_path):
         logger.log(f"InitApis: Local file exists -> {api_json_path}; skipping remote fetch")
     else:
         logger.log(f"InitApis: Local file not found -> {api_json_path}")
-        manifest_text = ""
         try:
             # Try primary URL first
             try:
@@ -57,17 +57,19 @@ def init_apis(content_script_query: str = "") -> str:
                 )
             except Exception as primary_err:
                 logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
-        try:
-            logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
-            resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
-            resp.raise_for_status()
-            manifest_text = resp.text
-            logger.log(
-                f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
-            )
-        except Exception as proxy_err:
-            logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
-            # Non-fatal: manifest_text remains empty
+                try:
+                    logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
+                    resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
+                    resp.raise_for_status()
+                    manifest_text = resp.text
+                    logger.log(
+                        f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
+                    )
+                except Exception as proxy_err:
+                    logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
+                    # Non-fatal: manifest_text remains empty
+        except Exception as outer_err:
+            logger.warn(f"InitApis: Unexpected error during API fetch: {outer_err}")
 
     normalized = normalize_manifest_text(manifest_text) if manifest_text else ""
     if normalized:
@@ -76,8 +78,14 @@ def init_apis(content_script_query: str = "") -> str:
         message = f"No API's Configured, Loaded {count} Free Ones :D"
         logger.log(f"InitApis: Wrote new api.json with {count} entries")
     else:
-        message = "No API's Configured and failed to load free ones"
-        logger.warn("InitApis: Manifest empty, nothing written")
+        # If we skipped fetch because file exists, we need a success message
+        if os.path.exists(api_json_path):
+            text = read_text(api_json_path)
+            count = count_apis(text)
+            message = f"APIs loaded from local cache ({count} entries)"
+        else:
+            message = "No API's Configured and failed to load free ones"
+            logger.warn("InitApis: Manifest empty, nothing written")
 
     _APIS_INIT_DONE = True
     _INIT_APIS_LAST_MESSAGE = message
