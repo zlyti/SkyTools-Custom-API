@@ -586,21 +586,16 @@ def _download_zip_for_app(appid: int):
     if morrenus_fallback:
         apis.append(morrenus_fallback)
 
-        _set_download_state(
-            appid,
-            {
-                "status": "downloading",
-                "currentApi": name,
-                "bytesRead": 0,
-                "totalBytes": 0,
-                "dest": dest_path,
-            },
-        )
-        
-        # Ensure compatibility layer exists (Polyfill for addappid)
-        _ensure_compatibility_layer()
+    _set_download_state(
+        appid,
+        {"status": "checking", "currentApi": None, "bytesRead": 0, "totalBytes": 0, "dest": dest_path},
+    )
 
-        try:
+    # Ensure compatibility layer exists (Polyfill for addappid)
+    _ensure_compatibility_layer()
+
+    for api in apis:
+        name = api.get("name", "Unknown")
         template = api.get("url", "")
         success_code = int(api.get("success_code", 200))
         unavailable_code = int(api.get("unavailable_code", 404))
