@@ -38,6 +38,13 @@ COMMUNITY_SOURCES = [
         "success_code": 200,
         "unavailable_code": 404,
         "enabled": True
+    },
+    {
+        "name": "ManifestHub Fix (tymolu233)",
+        "url": "https://github.com/tymolu233/ManifestAutoUpdate-fix/archive/refs/heads/<appid>.zip",
+        "success_code": 200,
+        "unavailable_code": 404,
+        "enabled": True
     }
 ]
 

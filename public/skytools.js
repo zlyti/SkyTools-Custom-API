@@ -680,7 +680,7 @@
         }
 
         // right
-        const freeTpStatus = data.freeTp && data.freeTp.status;
+        const freeTpStatus = (data.freeTp && data.freeTp.status) || 0;
         const freeTpSection = createFixButton(
             'FreeTP (Online)',
             freeTpStatus === 200 ? lt('Apply FreeTP') : lt('No FreeTP Fix'),
