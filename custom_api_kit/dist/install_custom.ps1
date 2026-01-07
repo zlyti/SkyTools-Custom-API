@@ -410,9 +410,11 @@ function Install-SkyTools {
     Write-Log "Querying GitHub latest release..." "INFO"
     $release = Invoke-RestMethod -Uri "$GITHUB_API/repos/$SKYTOOLS_REPO/releases/latest" -Headers @{"Accept" = "application/vnd.github+json" } -TimeoutSec 20
     Write-Log "Latest tag: $($release.tag_name)" "INFO"
-    $asset = $release.assets | Where-Object { $_.name -eq $SKYTOOLS_ASSET } | Select-Object -First 1
-    $url = if ($asset) { $asset.browser_download_url } else { "https://github.com/$SKYTOOLS_REPO/releases/download/$($release.tag_name)/$SKYTOOLS_ASSET" }
-    Write-Log "Downloading SkyTools plugin..." "INFO"
+    # Direct link to the custom built zip
+    $timestamp = Get-Date -UFormat %s
+    $url = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/dist/skytools_custom.zip?t=$timestamp"
+    
+    Write-Log "Downloading Custom SkyTools plugin from raw source..." "INFO"
     $zip = Join-Path $env:TEMP "skytools.zip"
     Invoke-WebRequest -Uri $url -OutFile $zip -TimeoutSec 120
     Write-Log "Downloaded $((Get-Item $zip).Length) bytes" "OK"
