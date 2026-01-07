@@ -1,7 +1,7 @@
 // SkyTools button injection (standalone plugin)
-(function() {
+(function () {
     'use strict';
-    
+
     // Forward logs to Millennium backend so they appear in the dev console
     function backendLog(message) {
         try {
@@ -14,13 +14,13 @@
             }
         }
     }
-    
+
     backendLog('SkyTools script loaded');
     // anti-spam state
     const logState = { missingOnce: false, existsOnce: false };
     // click/run debounce state
     const runState = { inProgress: false, appid: null };
-    
+
     const TRANSLATION_PLACEHOLDER = 'translation missing';
 
     function applyTranslationBundle(bundle) {
@@ -105,7 +105,7 @@
                 }
             `;
             document.head.appendChild(style);
-        } catch(err) { backendLog('SkyTools: Styles injection failed: ' + err); }
+        } catch (err) { backendLog('SkyTools: Styles injection failed: ' + err); }
     }
 
     function ensureFontAwesome() {
@@ -119,17 +119,17 @@
             link.crossOrigin = 'anonymous';
             link.referrerPolicy = 'no-referrer';
             document.head.appendChild(link);
-        } catch(err) { backendLog('SkyTools: Font Awesome injection failed: ' + err); }
+        } catch (err) { backendLog('SkyTools: Font Awesome injection failed: ' + err); }
     }
 
     function showSettingsPopup() {
         if (document.querySelector('.skytools-settings-overlay') || settingsMenuPending) return;
         settingsMenuPending = true;
-        ensureTranslationsLoaded(false).catch(function(){ return null; }).finally(function(){
+        ensureTranslationsLoaded(false).catch(function () { return null; }).finally(function () {
             settingsMenuPending = false;
             if (document.querySelector('.skytools-settings-overlay')) return;
 
-            try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch(_) {}
+            try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch (_) { }
             ensureSkyToolsStyles();
             ensureFontAwesome();
 
@@ -158,8 +158,8 @@
                 btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(102,192,244,0.1);border:1px solid rgba(102,192,244,0.3);border-radius:10px;color:#66c0f4;font-size:18px;text-decoration:none;transition:all 0.3s ease;cursor:pointer;';
                 btn.innerHTML = '<i class="fa-solid ' + iconClass + '"></i>';
                 btn.title = t(titleKey, titleFallback);
-                btn.onmouseover = function() { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
-                btn.onmouseout = function() { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
+                btn.onmouseover = function () { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
+                btn.onmouseout = function () { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
                 iconButtons.appendChild(btn);
                 return btn;
             }
@@ -187,8 +187,8 @@
                 const iconHtml = iconClass ? '<i class="fa-solid ' + iconClass + '" style="font-size:16px;"></i>' : '';
                 const textSpan = '<span style="text-align:center;">' + t(key, fallback) + '</span>';
                 btn.innerHTML = iconHtml + textSpan;
-                btn.onmouseover = function() { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.3) 0%, rgba(102,192,244,0.15) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(102,192,244,0.25)'; this.style.borderColor = '#66c0f4'; };
-                btn.onmouseout = function() { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.15) 0%, rgba(102,192,244,0.05) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
+                btn.onmouseover = function () { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.3) 0%, rgba(102,192,244,0.15) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(102,192,244,0.25)'; this.style.borderColor = '#66c0f4'; };
+                btn.onmouseout = function () { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.15) 0%, rgba(102,192,244,0.05) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
                 container.appendChild(btn);
                 return btn;
             }
@@ -217,27 +217,27 @@
             document.body.appendChild(overlay);
 
             if (checkBtn) {
-                checkBtn.addEventListener('click', function(e){
+                checkBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    try { overlay.remove(); } catch(_) {}
+                    try { overlay.remove(); } catch (_) { }
                     try {
-                        Millennium.callServerMethod('skytools', 'CheckForUpdatesNow', { contentScriptQuery: '' }).then(function(res){
+                        Millennium.callServerMethod('skytools', 'CheckForUpdatesNow', { contentScriptQuery: '' }).then(function (res) {
                             try {
                                 const payload = typeof res === 'string' ? JSON.parse(res) : res;
                                 const msg = (payload && payload.message) ? String(payload.message) : lt('No updates available.');
                                 ShowSkyToolsAlert('SkyTools', msg);
-                            } catch(_) {}
+                            } catch (_) { }
                         });
-                    } catch(_) {}
+                    } catch (_) { }
                 });
             }
 
             if (fetchApisBtn) {
-                fetchApisBtn.addEventListener('click', function(e){
+                fetchApisBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    try { overlay.remove(); } catch(_) {}
+                    try { overlay.remove(); } catch (_) { }
                     try {
-                        Millennium.callServerMethod('skytools', 'FetchFreeApisNow', { contentScriptQuery: '' }).then(function(res){
+                        Millennium.callServerMethod('skytools', 'FetchFreeApisNow', { contentScriptQuery: '' }).then(function (res) {
                             try {
                                 const payload = typeof res === 'string' ? JSON.parse(res) : res;
                                 const ok = payload && payload.success;
@@ -246,41 +246,41 @@
                                 const failText = (payload && payload.error) ? String(payload.error) : lt('Failed to load free APIs.');
                                 const text = ok ? successText : failText;
                                 ShowSkyToolsAlert('SkyTools', text);
-                            } catch(_) {}
+                            } catch (_) { }
                         });
-                    } catch(_) {}
+                    } catch (_) { }
                 });
             }
 
             if (closeBtn) {
-                closeBtn.addEventListener('click', function(e){
+                closeBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     overlay.remove();
                 });
             }
 
             if (settingsManagerBtn) { // This is the icon button now
-                settingsManagerBtn.addEventListener('click', function(e){
+                settingsManagerBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    try { overlay.remove(); } catch(_) {}
+                    try { overlay.remove(); } catch (_) { }
                     showSettingsManagerPopup(false, showSettingsPopup);
                 });
             }
 
             if (fixesMenuBtn) {
-                fixesMenuBtn.addEventListener('click', function(e){
+                fixesMenuBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     try {
                         const match = window.location.href.match(/https:\/\/store\.steampowered\.com\/app\/(\d+)/) || window.location.href.match(/https:\/\/steamcommunity\.com\/app\/(\d+)/);
                         const appid = match ? parseInt(match[1], 10) : (window.__SkyToolsCurrentAppId || NaN);
                         if (isNaN(appid)) {
-                            try { overlay.remove(); } catch(_) {}
+                            try { overlay.remove(); } catch (_) { }
                             const errText = t('menu.error.noAppId', 'Could not determine game AppID');
                             ShowSkyToolsAlert('SkyTools', errText);
                             return;
                         }
 
-                        Millennium.callServerMethod('skytools', 'GetGameInstallPath', { appid, contentScriptQuery: '' }).then(function(pathRes){
+                        Millennium.callServerMethod('skytools', 'GetGameInstallPath', { appid, contentScriptQuery: '' }).then(function (pathRes) {
                             try {
                                 let isGameInstalled = false;
                                 const pathPayload = typeof pathRes === 'string' ? JSON.parse(pathRes) : pathRes;
@@ -289,18 +289,18 @@
                                     window.__SkyToolsGameInstallPath = pathPayload.installPath;
                                 }
                                 window.__SkyToolsGameIsInstalled = isGameInstalled;
-                                try { overlay.remove(); } catch(_) {}
+                                try { overlay.remove(); } catch (_) { }
                                 showFixesLoadingPopupAndCheck(appid);
-                            } catch(err) {
+                            } catch (err) {
                                 backendLog('SkyTools: GetGameInstallPath error: ' + err);
-                                try { overlay.remove(); } catch(_) {}
+                                try { overlay.remove(); } catch (_) { }
                             }
-                        }).catch(function() {
-                            try { overlay.remove(); } catch(_) {}
+                        }).catch(function () {
+                            try { overlay.remove(); } catch (_) { }
                             const errorText = t('menu.error.getPath', 'Error getting game path');
                             ShowSkyToolsAlert('SkyTools', errorText);
                         });
-                    } catch(err) {
+                    } catch (err) {
                         backendLog('SkyTools: Fixes Menu button error: ' + err);
                     }
                 });
@@ -310,14 +310,14 @@
                 const match = window.location.href.match(/https:\/\/store\.steampowered\.com\/app\/(\d+)/) || window.location.href.match(/https:\/\/steamcommunity\.com\/app\/(\d+)/);
                 const appid = match ? parseInt(match[1], 10) : (window.__SkyToolsCurrentAppId || NaN);
                 if (!isNaN(appid) && typeof Millennium !== 'undefined' && typeof Millennium.callServerMethod === 'function') {
-                    Millennium.callServerMethod('skytools', 'HasSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function(res){
+                    Millennium.callServerMethod('skytools', 'HasSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function (res) {
                         try {
                             const payload = typeof res === 'string' ? JSON.parse(res) : res;
                             const exists = !!(payload && payload.success && payload.exists === true);
                             if (exists) {
-                                const doDelete = function() {
+                                const doDelete = function () {
                                     try {
-                                        Millennium.callServerMethod('skytools', 'DeleteSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function(){
+                                        Millennium.callServerMethod('skytools', 'DeleteSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function () {
                                             try {
                                                 window.__SkyToolsButtonInserted = false;
                                                 window.__SkyToolsPresenceCheckInFlight = false;
@@ -325,37 +325,37 @@
                                                 addSkyToolsButton();
                                                 const successText = t('menu.remove.success', 'SkyTools removed for this app.');
                                                 ShowSkyToolsAlert('SkyTools', successText);
-                                            } catch(err) {
+                                            } catch (err) {
                                                 backendLog('SkyTools: post-delete cleanup failed: ' + err);
                                             }
-                                        }).catch(function(err){
+                                        }).catch(function (err) {
                                             const failureText = t('menu.remove.failure', 'Failed to remove SkyTools.');
                                             const errMsg = (err && err.message) ? err.message : failureText;
                                             ShowSkyToolsAlert('SkyTools', errMsg);
                                         });
-                                    } catch(err) {
+                                    } catch (err) {
                                         backendLog('SkyTools: doDelete failed: ' + err);
                                     }
                                 };
 
                                 removeBtn.style.display = 'flex';
-                                removeBtn.onclick = function(e){
+                                removeBtn.onclick = function (e) {
                                     e.preventDefault();
-                                    try { overlay.remove(); } catch(_) {}
+                                    try { overlay.remove(); } catch (_) { }
                                     const confirmMessage = t('menu.remove.confirm', 'Remove via SkyTools for this game?');
-                                    showSkyToolsConfirm('SkyTools', confirmMessage, function(){
+                                    showSkyToolsConfirm('SkyTools', confirmMessage, function () {
                                         doDelete();
-                                    }, function(){
-                                        try { showSettingsPopup(); } catch(_) {}
+                                    }, function () {
+                                        try { showSettingsPopup(); } catch (_) { }
                                     });
                                 };
                             } else {
                                 removeBtn.style.display = 'none';
                             }
-                        } catch(_) {}
+                        } catch (_) { }
                     });
                 }
-            } catch(_) {}
+            } catch (_) { }
         });
     }
 
@@ -370,7 +370,7 @@
             }
             const targetLanguage = (typeof preferredLanguage === 'string' && preferredLanguage) ? preferredLanguage :
                 ((window.__SkyToolsI18n && window.__SkyToolsI18n.language) || '');
-            return Millennium.callServerMethod('skytools', 'GetTranslations', { language: targetLanguage, contentScriptQuery: '' }).then(function(res){
+            return Millennium.callServerMethod('skytools', 'GetTranslations', { language: targetLanguage, contentScriptQuery: '' }).then(function (res) {
                 const payload = typeof res === 'string' ? JSON.parse(res) : res;
                 if (!payload || payload.success !== true || !payload.strings) {
                     throw new Error('Invalid translation payload');
@@ -379,12 +379,12 @@
                 // Update button text after translations are loaded
                 updateButtonTranslations();
                 return window.__SkyToolsI18n;
-            }).catch(function(err){
+            }).catch(function (err) {
                 backendLog('SkyTools: translation load failed: ' + err);
                 window.__SkyToolsI18n = window.__SkyToolsI18n || { language: 'en', locales: [], strings: {}, ready: false };
                 return window.__SkyToolsI18n;
             });
-        } catch(err) {
+        } catch (err) {
             backendLog('SkyTools: ensureTranslationsLoaded error: ' + err);
             window.__SkyToolsI18n = window.__SkyToolsI18n || { language: 'en', locales: [], strings: {}, ready: false };
             return Promise.resolve(window.__SkyToolsI18n);
@@ -406,7 +406,7 @@
                     }
                 }
             }
-        } catch(_) {}
+        } catch (_) { }
         return typeof fallback !== 'undefined' ? fallback : key;
     }
 
@@ -422,15 +422,15 @@
     ensureTranslationsLoaded(false);
 
     let settingsMenuPending = false;
-    
+
     // Helper: show a Steam-style popup with a 10s loading bar (custom UI)
     function showTestPopup() {
 
         // Avoid duplicates
         if (document.querySelector('.skytools-overlay')) return;
         // Close settings popup if open so modals don't overlap
-        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch(_) {}
-        
+        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch (_) { }
+
         ensureSkyToolsStyles();
         const overlay = document.createElement('div');
         overlay.className = 'skytools-overlay';
@@ -470,12 +470,12 @@
         cancelBtn.innerHTML = `<span>${lt('Cancel')}</span>`;
         cancelBtn.href = '#';
         cancelBtn.style.display = 'none';
-        cancelBtn.onclick = function(e){ e.preventDefault(); cancelOperation(); };
+        cancelBtn.onclick = function (e) { e.preventDefault(); cancelOperation(); };
         const hideBtn = document.createElement('a');
         hideBtn.className = 'btnv6_blue_hoverfade btn_medium skytools-hide-btn';
         hideBtn.innerHTML = `<span>${lt('Hide')}</span>`;
         hideBtn.href = '#';
-        hideBtn.onclick = function(e){ e.preventDefault(); cleanup(); };
+        hideBtn.onclick = function (e) { e.preventDefault(); cleanup(); };
         btnRow.appendChild(cancelBtn);
         btnRow.appendChild(hideBtn);
 
@@ -487,11 +487,11 @@
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        function cleanup(){
+        function cleanup() {
             overlay.remove();
         }
-        
-        function cancelOperation(){
+
+        function cancelOperation() {
             // Call backend to cancel the operation
             try {
                 const match = window.location.href.match(/https:\/\/store\.steampowered\.com\/app\/(\d+)/) || window.location.href.match(/https:\/\/steamcommunity\.com\/app\/(\d+)/);
@@ -499,7 +499,7 @@
                 if (!isNaN(appid) && typeof Millennium !== 'undefined' && typeof Millennium.callServerMethod === 'function') {
                     Millennium.callServerMethod('skytools', 'CancelAddViaSkyTools', { appid, contentScriptQuery: '' });
                 }
-            } catch(_) {}
+            } catch (_) { }
             // Update UI to show cancelled
             const status = overlay.querySelector('.skytools-status');
             if (status) status.textContent = lt('Cancelled');
@@ -522,10 +522,10 @@
     function showFixesResultsPopup(data, isGameInstalled) {
         if (document.querySelector('.skytools-fixes-results-overlay')) return;
         // Close other popups
-        try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch(_) {}
-        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch(_) {}
-        try { const f = document.querySelector('.skytools-fixes-results-overlay'); if (f) f.remove(); } catch(_) {}
-        try { const l = document.querySelector('.skytools-loading-fixes-overlay'); if (l) l.remove(); } catch(_) {}
+        try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch (_) { }
+        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch (_) { }
+        try { const f = document.querySelector('.skytools-fixes-results-overlay'); if (f) f.remove(); } catch (_) { }
+        try { const l = document.querySelector('.skytools-loading-fixes-overlay'); if (l) l.remove(); } catch (_) { }
 
         ensureSkyToolsStyles();
         const overlay = document.createElement('div');
@@ -553,8 +553,8 @@
             btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(102,192,244,0.1);border:1px solid rgba(102,192,244,0.3);border-radius:10px;color:#66c0f4;font-size:18px;text-decoration:none;transition:all 0.3s ease;cursor:pointer;';
             btn.innerHTML = '<i class="fa-solid ' + iconClass + '"></i>';
             btn.title = t(titleKey, titleFallback);
-            btn.onmouseover = function() { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
-            btn.onmouseout = function() { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
+            btn.onmouseover = function () { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
+            btn.onmouseout = function () { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
             iconButtons.appendChild(btn);
             return btn;
         }
@@ -571,7 +571,7 @@
                 body.style.background = `linear-gradient(to bottom, rgba(11, 20, 30, 0.85), #0b141e 70%), url('${bannerImg.src}') no-repeat top center`;
                 body.style.backgroundSize = 'cover';
             }
-        } catch(_) {}
+        } catch (_) { }
 
         const gameHeader = document.createElement('div');
         gameHeader.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;';
@@ -584,7 +584,7 @@
                 gameIcon.src = iconImg.src;
                 gameIcon.style.display = 'block';
             }
-        } catch(_) {}
+        } catch (_) { }
 
         const gameName = document.createElement('div');
         gameName.style.cssText = 'font-size:22px;color:#fff;font-weight:600;text-align:center;';
@@ -619,14 +619,14 @@
             if (isSuccess) {
                 btn.style.background = 'linear-gradient(135deg, rgba(92,156,62,0.4) 0%, rgba(92,156,62,0.2) 100%)';
                 btn.style.borderColor = 'rgba(92,156,62,0.6)';
-                btn.onmouseover = function() { this.style.background = 'linear-gradient(135deg, rgba(92,156,62,0.6) 0%, rgba(92,156,62,0.3) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(92,156,62,0.3)'; this.style.borderColor = '#79c754'; };
-                btn.onmouseout = function() { this.style.background = 'linear-gradient(135deg, rgba(92,156,62,0.4) 0%, rgba(92,156,62,0.2) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(92,156,62,0.6)'; };
+                btn.onmouseover = function () { this.style.background = 'linear-gradient(135deg, rgba(92,156,62,0.6) 0%, rgba(92,156,62,0.3) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(92,156,62,0.3)'; this.style.borderColor = '#79c754'; };
+                btn.onmouseout = function () { this.style.background = 'linear-gradient(135deg, rgba(92,156,62,0.4) 0%, rgba(92,156,62,0.2) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(92,156,62,0.6)'; };
             } else if (isSuccess === false) {
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
             } else {
-                btn.onmouseover = function() { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.3) 0%, rgba(102,192,244,0.15) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(102,192,244,0.25)'; this.style.borderColor = '#66c0f4'; };
-                btn.onmouseout = function() { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.15) 0%, rgba(102,192,244,0.05) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
+                btn.onmouseover = function () { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.3) 0%, rgba(102,192,244,0.15) 100%)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(102,192,244,0.25)'; this.style.borderColor = '#66c0f4'; };
+                btn.onmouseout = function () { this.style.background = 'linear-gradient(135deg, rgba(102,192,244,0.15) 0%, rgba(102,192,244,0.05) 100%)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
             }
 
             btn.onclick = onClick;
@@ -643,7 +643,7 @@
             genericStatus === 200 ? lt('Apply') : lt('No generic fix'),
             genericStatus === 200 ? 'fa-check' : 'fa-circle-xmark',
             genericStatus === 200 ? true : false,
-            function(e) {
+            function (e) {
                 e.preventDefault();
                 if (genericStatus === 200 && isGameInstalled) {
                     const genericUrl = 'https://files.skytools.work/GameBypasses/' + data.appid + '.zip';
@@ -664,7 +664,7 @@
             onlineStatus === 200 ? lt('Apply') : lt('No online-fix'),
             onlineStatus === 200 ? 'fa-check' : 'fa-circle-xmark',
             onlineStatus === 200 ? true : false,
-            function(e) {
+            function (e) {
                 e.preventDefault();
                 if (onlineStatus === 200 && isGameInstalled) {
                     const onlineUrl = data.onlineFix.url || ('https://files.skytools.work/OnlineFix1/' + data.appid + '.zip');
@@ -680,12 +680,33 @@
         }
 
         // right
+        const freeTpStatus = data.freeTp && data.freeTp.status;
+        const freeTpSection = createFixButton(
+            'FreeTP (Online)',
+            freeTpStatus === 200 ? lt('Apply FreeTP') : lt('No FreeTP Fix'),
+            'fa-globe',
+            freeTpStatus === 200 ? true : false,
+            function (e) {
+                e.preventDefault();
+                if (freeTpStatus === 200 && isGameInstalled) {
+                    const freeTpUrl = data.freeTp.url;
+                    applyFix(data.appid, freeTpUrl, lt('FreeTP Fix'), data.gameName, overlay);
+                }
+            }
+        );
+        rightColumn.appendChild(freeTpSection);
+        if (!isGameInstalled) {
+            freeTpSection.querySelector('a').style.opacity = '0.5';
+            freeTpSection.querySelector('a').style.cursor = 'not-allowed';
+        }
+
+
         const aioSection = createFixButton(
             lt('All-In-One Fixes'),
             lt('Online Fix (Unsteam)'),
             'fa-globe',
             null, // default blue button
-            function(e) {
+            function (e) {
                 e.preventDefault();
                 if (isGameInstalled) {
                     const downloadUrl = 'https://github.com/madoiscool/lt_api_links/releases/download/unsteam/Win64.zip';
@@ -704,13 +725,13 @@
             lt('Un-Fix (verify game)'),
             'fa-trash',
             null, // ^^
-            function(e) {
+            function (e) {
                 e.preventDefault();
                 if (isGameInstalled) {
-                    try { overlay.remove(); } catch(_) {}
+                    try { overlay.remove(); } catch (_) { }
                     showSkyToolsConfirm('SkyTools', lt('Are you sure you want to un-fix? This will remove fix files and verify game files.'),
-                        function() { startUnfix(data.appid); },
-                        function() { showFixesResultsPopup(data, isGameInstalled); }
+                        function () { startUnfix(data.appid); },
+                        function () { showFixesResultsPopup(data, isGameInstalled); }
                     );
                 }
             }
@@ -751,12 +772,12 @@
         gameFolderBtn.className = 'btnv6_blue_hoverfade btn_medium';
         gameFolderBtn.innerHTML = `<span><i class="fa-solid fa-folder" style="margin-right: 8px;"></i>${lt('Game folder')}</span>`;
         gameFolderBtn.href = '#';
-        gameFolderBtn.onclick = function(e){ 
-            e.preventDefault(); 
+        gameFolderBtn.onclick = function (e) {
+            e.preventDefault();
             if (window.__SkyToolsGameInstallPath) {
                 try {
                     Millennium.callServerMethod('skytools', 'OpenGameFolder', { path: window.__SkyToolsGameInstallPath, contentScriptQuery: '' });
-                } catch(err) { backendLog('SkyTools: Failed to open game folder: ' + err); }
+                } catch (err) { backendLog('SkyTools: Failed to open game folder: ' + err); }
             }
         };
         rightButtons.appendChild(gameFolderBtn);
@@ -765,9 +786,9 @@
         backBtn.className = 'btnv6_blue_hoverfade btn_medium';
         backBtn.innerHTML = '<span><i class="fa-solid fa-arrow-left"></i></span>';
         backBtn.href = '#';
-        backBtn.onclick = function(e){
+        backBtn.onclick = function (e) {
             e.preventDefault();
-            try { overlay.remove(); } catch(_) {}
+            try { overlay.remove(); } catch (_) { }
             showSettingsPopup();
         };
         btnRow.appendChild(backBtn);
@@ -776,20 +797,20 @@
         // final modal
         modal.appendChild(header);
         modal.appendChild(body);
-        modal.appendChild(btnRow);  
+        modal.appendChild(btnRow);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        closeIconBtn.onclick = function(e) { e.preventDefault(); overlay.remove(); };
-        settingsBtn.onclick = function(e) {
+        closeIconBtn.onclick = function (e) { e.preventDefault(); overlay.remove(); };
+        settingsBtn.onclick = function (e) {
             e.preventDefault();
-            try { overlay.remove(); } catch(_) {}
-            showSettingsManagerPopup(false, function() { showFixesResultsPopup(data, isGameInstalled); });
+            try { overlay.remove(); } catch (_) { }
+            showSettingsManagerPopup(false, function () { showFixesResultsPopup(data, isGameInstalled); });
         };
 
         function startUnfix(appid) {
             try {
-                Millennium.callServerMethod('skytools', 'UnFixGame', { appid: appid, installPath: window.__SkyToolsGameInstallPath, contentScriptQuery: '' }).then(function(res){
+                Millennium.callServerMethod('skytools', 'UnFixGame', { appid: appid, installPath: window.__SkyToolsGameInstallPath, contentScriptQuery: '' }).then(function (res) {
                     const payload = typeof res === 'string' ? JSON.parse(res) : res;
                     if (payload && payload.success) {
                         showUnfixProgress(appid);
@@ -798,19 +819,19 @@
                         const errorMsg = (errorKey && (errorKey.startsWith('menu.error.') || errorKey.startsWith('common.'))) ? t(errorKey) : (errorKey || lt('Failed to start un-fix'));
                         ShowSkyToolsAlert('SkyTools', errorMsg);
                     }
-                }).catch(function(){
+                }).catch(function () {
                     const msg = lt('Error starting un-fix');
                     ShowSkyToolsAlert('SkyTools', msg);
                 });
-            } catch(err) { backendLog('SkyTools: Un-Fix start error: ' + err); }
+            } catch (err) { backendLog('SkyTools: Un-Fix start error: ' + err); }
         }
     }
 
     function showFixesLoadingPopupAndCheck(appid) {
         if (document.querySelector('.skytools-loading-fixes-overlay')) return;
-        try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch(_) {}
-        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch(_) {}
-        try { const f = document.querySelector('.skytools-fixes-overlay'); if (f) f.remove(); } catch(_) {}
+        try { const d = document.querySelector('.skytools-overlay'); if (d) d.remove(); } catch (_) { }
+        try { const s = document.querySelector('.skytools-settings-overlay'); if (s) s.remove(); } catch (_) { }
+        try { const f = document.querySelector('.skytools-fixes-overlay'); if (f) f.remove(); } catch (_) { }
 
         ensureSkyToolsStyles();
         const overlay = document.createElement('div');
@@ -842,14 +863,14 @@
         document.body.appendChild(overlay);
 
         let progress = 0;
-        const progressInterval = setInterval(function() {
+        const progressInterval = setInterval(function () {
             if (progress < 95) {
                 progress += Math.random() * 5;
                 progressBar.style.width = Math.min(progress, 95) + '%';
             }
         }, 200);
 
-        Millennium.callServerMethod('skytools', 'CheckForFixes', { appid, contentScriptQuery: '' }).then(function(res){
+        Millennium.callServerMethod('skytools', 'CheckForFixes', { appid, contentScriptQuery: '' }).then(function (res) {
             const payload = typeof res === 'string' ? JSON.parse(res) : res;
             if (payload && payload.success) {
                 const isGameInstalled = window.__SkyToolsGameIsInstalled === true;
@@ -858,17 +879,17 @@
                 const errText = (payload && payload.error) ? String(payload.error) : lt('Failed to check for fixes.');
                 ShowSkyToolsAlert('SkyTools', errText);
             }
-        }).catch(function() {
+        }).catch(function () {
             const msg = lt('Error checking for fixes');
             ShowSkyToolsAlert('SkyTools', msg);
-        }).finally(function() {
+        }).finally(function () {
             clearInterval(progressInterval);
             progressBar.style.width = '100%';
-            setTimeout(function() {
+            setTimeout(function () {
                 try {
                     const l = document.querySelector('.skytools-loading-fixes-overlay');
                     if (l) l.remove();
-                } catch(_) {}
+                } catch (_) { }
             }, 300);
         });
     }
@@ -880,25 +901,25 @@
             if (resultsOverlay) {
                 resultsOverlay.remove();
             }
-            
+
             // Check if we have the game install path
             if (!window.__SkyToolsGameInstallPath) {
                 const msg = lt('Game install path not found');
                 ShowSkyToolsAlert('SkyTools', msg);
                 return;
             }
-            
+
             backendLog('SkyTools: Applying fix ' + fixType + ' for appid ' + appid);
-            
+
             // Start the download and extraction process
-            Millennium.callServerMethod('skytools', 'ApplyGameFix', { 
-                appid: appid, 
-                downloadUrl: downloadUrl, 
+            Millennium.callServerMethod('skytools', 'ApplyGameFix', {
+                appid: appid,
+                downloadUrl: downloadUrl,
                 installPath: window.__SkyToolsGameInstallPath,
                 fixType: fixType,
                 gameName: gameName || '',
-                contentScriptQuery: '' 
-            }).then(function(res){
+                contentScriptQuery: ''
+            }).then(function (res) {
                 try {
                     const payload = typeof res === 'string' ? JSON.parse(res) : res;
                     if (payload && payload.success) {
@@ -909,17 +930,17 @@
                         const errorMsg = (errorKey && (errorKey.startsWith('menu.error.') || errorKey.startsWith('common.'))) ? t(errorKey) : (errorKey || lt('Failed to start fix download'));
                         ShowSkyToolsAlert('SkyTools', errorMsg);
                     }
-                } catch(err) {
+                } catch (err) {
                     backendLog('SkyTools: ApplyGameFix response error: ' + err);
                     const msg = lt('Error applying fix');
                     ShowSkyToolsAlert('SkyTools', msg);
                 }
-            }).catch(function(err){
+            }).catch(function (err) {
                 backendLog('SkyTools: ApplyGameFix error: ' + err);
                 const msg = lt('Error applying fix');
                 ShowSkyToolsAlert('SkyTools', msg);
             });
-        } catch(err) {
+        } catch (err) {
             backendLog('SkyTools: applyFix error: ' + err);
         }
     }
@@ -954,7 +975,7 @@
         hideBtn.className = 'skytools-btn';
         hideBtn.style.flex = '1';
         hideBtn.innerHTML = `<span>${lt('Hide')}</span>`;
-        hideBtn.onclick = function(e){ e.preventDefault(); overlay.remove(); };
+        hideBtn.onclick = function (e) { e.preventDefault(); overlay.remove(); };
         btnRow.appendChild(hideBtn);
 
         const cancelBtn = document.createElement('a');
@@ -962,7 +983,7 @@
         cancelBtn.className = 'skytools-btn primary';
         cancelBtn.style.flex = '1';
         cancelBtn.innerHTML = `<span>${lt('Cancel')}</span>`;
-        cancelBtn.onclick = function(e){
+        cancelBtn.onclick = function (e) {
             e.preventDefault();
             if (cancelBtn.dataset.pending === '1') return;
             cancelBtn.dataset.pending = '1';
@@ -970,13 +991,13 @@
             if (span) span.textContent = lt('Cancelling...');
             const msgEl = document.getElementById('lt-fix-progress-msg');
             if (msgEl) msgEl.textContent = lt('Cancelling...');
-            Millennium.callServerMethod('skytools', 'CancelApplyFix', { appid: appid, contentScriptQuery: '' }).then(function(res){
+            Millennium.callServerMethod('skytools', 'CancelApplyFix', { appid: appid, contentScriptQuery: '' }).then(function (res) {
                 try {
                     const payload = typeof res === 'string' ? JSON.parse(res) : res;
                     if (!payload || payload.success !== true) {
                         throw new Error((payload && payload.error) || lt('Cancellation failed'));
                     }
-                } catch(err) {
+                } catch (err) {
                     cancelBtn.dataset.pending = '0';
                     if (span) span.textContent = lt('Cancel');
                     const msgEl2 = document.getElementById('lt-fix-progress-msg');
@@ -985,7 +1006,7 @@
                     const msg = lt('Failed to cancel fix download');
                     ShowSkyToolsAlert('SkyTools', msg);
                 }
-            }).catch(function(err){
+            }).catch(function (err) {
                 cancelBtn.dataset.pending = '0';
                 const span2 = cancelBtn.querySelector('span');
                 if (span2) span2.textContent = lt('Cancel');
@@ -1019,24 +1040,24 @@
         closeBtn.className = 'skytools-btn primary';
         closeBtn.style.minWidth = '140px';
         closeBtn.innerHTML = `<span>${lt('Close')}</span>`;
-        closeBtn.onclick = function(e){ e.preventDefault(); overlayEl.remove(); };
+        closeBtn.onclick = function (e) { e.preventDefault(); overlayEl.remove(); };
         btnRow.appendChild(closeBtn);
     }
 
     // Poll fix download and extraction progress
     function pollFixProgress(appid, fixType) {
-        const poll = function() {
+        const poll = function () {
             try {
                 const overlayEl = document.querySelector('.skytools-overlay');
                 if (!overlayEl) return; // Stop if overlay was closed
-                
-                Millennium.callServerMethod('skytools', 'GetApplyFixStatus', { appid: appid, contentScriptQuery: '' }).then(function(res){
+
+                Millennium.callServerMethod('skytools', 'GetApplyFixStatus', { appid: appid, contentScriptQuery: '' }).then(function (res) {
                     try {
                         const payload = typeof res === 'string' ? JSON.parse(res) : res;
                         if (payload && payload.success && payload.state) {
                             const state = payload.state;
                             const msgEl = document.getElementById('lt-fix-progress-msg');
-                            
+
                             if (state.status === 'downloading') {
                                 const pct = state.totalBytes > 0 ? Math.floor((state.bytesRead / state.totalBytes) * 100) : 0;
                                 if (msgEl) { msgEl.textContent = lt('Downloading: {percent}%').replace('{percent}', pct); msgEl.dataset.last = msgEl.textContent; }
@@ -1061,11 +1082,11 @@
                                 setTimeout(poll, 500);
                             }
                         }
-                    } catch(err) {
+                    } catch (err) {
                         backendLog('SkyTools: GetApplyFixStatus error: ' + err);
                     }
                 });
-            } catch(err) {
+            } catch (err) {
                 backendLog('SkyTools: pollFixProgress error: ' + err);
             }
         };
@@ -1075,7 +1096,7 @@
     // Show un-fix progress popup
     function showUnfixProgress(appid) {
         // Remove any existing popup
-        try { const old = document.querySelector('.skytools-unfix-overlay'); if (old) old.remove(); } catch(_) {}
+        try { const old = document.querySelector('.skytools-unfix-overlay'); if (old) old.remove(); } catch (_) { }
 
         ensureSkyToolsStyles();
         const overlay = document.createElement('div');
@@ -1100,7 +1121,7 @@
         hideBtn.className = 'skytools-btn';
         hideBtn.style.minWidth = '140px';
         hideBtn.innerHTML = `<span>${lt('Hide')}</span>`;
-        hideBtn.onclick = function(e){ e.preventDefault(); overlay.remove(); };
+        hideBtn.onclick = function (e) { e.preventDefault(); overlay.remove(); };
         btnRow.appendChild(hideBtn);
 
         modal.appendChild(title);
@@ -1115,18 +1136,18 @@
 
     // Poll un-fix progress
     function pollUnfixProgress(appid) {
-        const poll = function() {
+        const poll = function () {
             try {
                 const overlayEl = document.querySelector('.skytools-unfix-overlay');
                 if (!overlayEl) return; // Stop if overlay was closed
-                
-                Millennium.callServerMethod('skytools', 'GetUnfixStatus', { appid: appid, contentScriptQuery: '' }).then(function(res){
+
+                Millennium.callServerMethod('skytools', 'GetUnfixStatus', { appid: appid, contentScriptQuery: '' }).then(function (res) {
                     try {
                         const payload = typeof res === 'string' ? JSON.parse(res) : res;
                         if (payload && payload.success && payload.state) {
                             const state = payload.state;
                             const msgEl = document.getElementById('lt-unfix-progress-msg');
-                            
+
                             if (state.status === 'removing') {
                                 if (msgEl) msgEl.textContent = state.progress || lt('Removing fix files...');
                                 // Continue polling
@@ -1144,20 +1165,20 @@
                                         closeBtn.className = 'skytools-btn primary';
                                         closeBtn.style.minWidth = '140px';
                                         closeBtn.innerHTML = `<span>${lt('Close')}</span>`;
-                                        closeBtn.onclick = function(e){ e.preventDefault(); overlayEl.remove(); };
+                                        closeBtn.onclick = function (e) { e.preventDefault(); overlayEl.remove(); };
                                         btnRow.appendChild(closeBtn);
                                     }
-                                } catch(_) {}
-                                
+                                } catch (_) { }
+
                                 // Trigger Steam verification after a short delay
-                                setTimeout(function(){
+                                setTimeout(function () {
                                     try {
                                         const verifyUrl = 'steam://validate/' + appid;
                                         window.location.href = verifyUrl;
                                         backendLog('SkyTools: Running verify for appid ' + appid);
-                                    } catch(_) {}
+                                    } catch (_) { }
                                 }, 1000);
-                                
+
                                 return; // Stop polling
                             } else if (state.status === 'failed') {
                                 if (msgEl) msgEl.textContent = lt('Failed: {error}').replace('{error}', state.error || lt('Unknown error'));
@@ -1171,21 +1192,21 @@
                                         closeBtn.className = 'skytools-btn primary';
                                         closeBtn.style.minWidth = '140px';
                                         closeBtn.innerHTML = `<span>${lt('Close')}</span>`;
-                                        closeBtn.onclick = function(e){ e.preventDefault(); overlayEl.remove(); };
+                                        closeBtn.onclick = function (e) { e.preventDefault(); overlayEl.remove(); };
                                         btnRow.appendChild(closeBtn);
                                     }
-                                } catch(_) {}
+                                } catch (_) { }
                                 return; // Stop polling
                             } else {
                                 // Continue polling for unknown states
                                 setTimeout(poll, 500);
                             }
                         }
-                    } catch(err) {
+                    } catch (err) {
                         backendLog('SkyTools: GetUnfixStatus error: ' + err);
                     }
                 });
-            } catch(err) {
+            } catch (err) {
                 backendLog('SkyTools: pollUnfixProgress error: ' + err);
             }
         };
@@ -1197,13 +1218,13 @@
             if (!forceRefresh && window.__SkyToolsSettings && Array.isArray(window.__SkyToolsSettings.schema)) {
                 return Promise.resolve(window.__SkyToolsSettings);
             }
-        } catch(_) {}
+        } catch (_) { }
 
         if (typeof Millennium === 'undefined' || typeof Millennium.callServerMethod !== 'function') {
             return Promise.reject(new Error(lt('SkyTools backend unavailable')));
         }
 
-        return Millennium.callServerMethod('skytools', 'GetSettingsConfig', { contentScriptQuery: '' }).then(function(res){
+        return Millennium.callServerMethod('skytools', 'GetSettingsConfig', { contentScriptQuery: '' }).then(function (res) {
             const payload = typeof res === 'string' ? JSON.parse(res) : res;
             if (!payload || payload.success !== true) {
                 const errorMsg = (payload && payload.error) ? String(payload.error) : t('settings.error', 'Failed to load settings.');
@@ -1254,7 +1275,7 @@
     function showSettingsManagerPopup(forceRefresh, onBack) {
         if (document.querySelector('.skytools-settings-manager-overlay')) return;
 
-        try { const mainOverlay = document.querySelector('.skytools-settings-overlay'); if (mainOverlay) mainOverlay.remove(); } catch(_) {}
+        try { const mainOverlay = document.querySelector('.skytools-settings-overlay'); if (mainOverlay) mainOverlay.remove(); } catch (_) { }
 
         ensureSkyToolsStyles();
         ensureFontAwesome();
@@ -1281,8 +1302,8 @@
         closeIconBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(102,192,244,0.1);border:1px solid rgba(102,192,244,0.3);border-radius:10px;color:#66c0f4;font-size:18px;text-decoration:none;transition:all 0.3s ease;cursor:pointer;';
         closeIconBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
         closeIconBtn.title = t('settings.close', 'Close');
-        closeIconBtn.onmouseover = function() { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
-        closeIconBtn.onmouseout = function() { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
+        closeIconBtn.onmouseover = function () { this.style.background = 'rgba(102,192,244,0.25)'; this.style.transform = 'translateY(-2px) scale(1.05)'; this.style.boxShadow = '0 8px 16px rgba(102,192,244,0.3)'; this.style.borderColor = '#66c0f4'; };
+        closeIconBtn.onmouseout = function () { this.style.background = 'rgba(102,192,244,0.1)'; this.style.transform = 'translateY(0) scale(1)'; this.style.boxShadow = 'none'; this.style.borderColor = 'rgba(102,192,244,0.3)'; };
         iconButtons.appendChild(closeIconBtn);
 
         const contentWrap = document.createElement('div');
@@ -1324,7 +1345,7 @@
                 btn.classList.add('primary');
             }
 
-            btn.onmouseover = function() {
+            btn.onmouseover = function () {
                 if (this.dataset.disabled === '1') {
                     this.style.opacity = '0.6';
                     this.style.cursor = 'not-allowed';
@@ -1332,7 +1353,7 @@
                 }
             };
 
-            btn.onmouseout = function() {
+            btn.onmouseout = function () {
                 if (this.dataset.disabled === '1') {
                     this.style.opacity = '0.5';
                     return;
@@ -1525,9 +1546,9 @@
                             selectEl.value = String(currentValue);
                         }
 
-                        selectEl.addEventListener('change', function(){
+                        selectEl.addEventListener('change', function () {
                             state.draft[group.key][option.key] = selectEl.value;
-                            try { backendLog('SkyTools: language select changed to ' + selectEl.value); } catch(_) {}
+                            try { backendLog('SkyTools: language select changed to ' + selectEl.value); } catch (_) { }
                             updateSaveState();
                             setStatus(t('settings.unsaved', 'Unsaved changes'), '#c7d5e0');
                         });
@@ -1576,7 +1597,7 @@
                             }
                         }
 
-                        yesBtn.addEventListener('click', function(e){
+                        yesBtn.addEventListener('click', function (e) {
                             e.preventDefault();
                             state.draft[group.key][option.key] = true;
                             refreshToggleButtons();
@@ -1584,7 +1605,7 @@
                             setStatus(t('settings.unsaved', 'Unsaved changes'), '#c7d5e0');
                         });
 
-                        noBtn.addEventListener('click', function(e){
+                        noBtn.addEventListener('click', function (e) {
                             e.preventDefault();
                             state.draft[group.key][option.key] = false;
                             refreshToggleButtons();
@@ -1647,7 +1668,7 @@
             container.innerHTML = '<div style="padding:14px;text-align:center;color:#c7d5e0;">' + t('settings.installedFixes.loading', 'Scanning for installed fixes...') + '</div>';
 
             Millennium.callServerMethod('skytools', 'GetInstalledFixes', { contentScriptQuery: '' })
-                .then(function(res) {
+                .then(function (res) {
                     const response = typeof res === 'string' ? JSON.parse(res) : res;
                     if (!response || !response.success) {
                         container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #ff5c5c;border-radius:4px;color:#ff5c5c;">' + t('settings.installedFixes.error', 'Failed to load installed fixes.') + '</div>';
@@ -1667,7 +1688,7 @@
                         container.appendChild(fixEl);
                     }
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #ff5c5c;border-radius:4px;color:#ff5c5c;">' + t('settings.installedFixes.error', 'Failed to load installed fixes.') + '</div>';
                 });
         }
@@ -1675,8 +1696,8 @@
         function createFixListItem(fix, container) {
             const itemEl = document.createElement('div');
             itemEl.style.cssText = 'margin-bottom:12px;padding:14px;background:rgba(11,20,30,0.8);border:1px solid rgba(102,192,244,0.3);border-radius:6px;display:flex;justify-content:space-between;align-items:center;transition:all 0.2s ease;';
-            itemEl.onmouseover = function() { this.style.borderColor = '#66c0f4'; this.style.background = 'rgba(11,20,30,0.95)'; };
-            itemEl.onmouseout = function() { this.style.borderColor = 'rgba(102,192,244,0.3)'; this.style.background = 'rgba(11,20,30,0.8)'; };
+            itemEl.onmouseover = function () { this.style.borderColor = '#66c0f4'; this.style.background = 'rgba(11,20,30,0.95)'; };
+            itemEl.onmouseout = function () { this.style.borderColor = 'rgba(102,192,244,0.3)'; this.style.background = 'rgba(11,20,30,0.8)'; };
 
             const infoDiv = document.createElement('div');
             infoDiv.style.cssText = 'flex:1;';
@@ -1715,14 +1736,14 @@
             deleteBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,80,80,0.12);border:2px solid rgba(255,80,80,0.35);border-radius:12px;color:#ff5050;font-size:18px;text-decoration:none;transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);cursor:pointer;flex-shrink:0;';
             deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
             deleteBtn.title = t('settings.installedFixes.delete', 'Delete');
-            deleteBtn.onmouseover = function() {
+            deleteBtn.onmouseover = function () {
                 this.style.background = 'rgba(255,80,80,0.25)';
                 this.style.borderColor = 'rgba(255,80,80,0.6)';
                 this.style.color = '#ff6b6b';
                 this.style.transform = 'translateY(-2px) scale(1.05)';
                 this.style.boxShadow = '0 6px 20px rgba(255,80,80,0.4), 0 0 0 4px rgba(255,80,80,0.1)';
             };
-            deleteBtn.onmouseout = function() {
+            deleteBtn.onmouseout = function () {
                 this.style.background = 'rgba(255,80,80,0.12)';
                 this.style.borderColor = 'rgba(255,80,80,0.35)';
                 this.style.color = '#ff5050';
@@ -1730,14 +1751,14 @@
                 this.style.boxShadow = 'none';
             };
 
-            deleteBtn.addEventListener('click', function(e) {
+            deleteBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (deleteBtn.dataset.busy === '1') return;
 
                 showSkyToolsConfirm(
                     fix.gameName || 'SkyTools',
                     t('settings.installedFixes.deleteConfirm', 'Are you sure you want to remove this fix? This will delete fix files and run Steam verification.'),
-                    function() {
+                    function () {
                         // User confirmed
                         deleteBtn.dataset.busy = '1';
                         deleteBtn.style.opacity = '0.6';
@@ -1749,27 +1770,27 @@
                             fixDate: fix.date || '',
                             contentScriptQuery: ''
                         })
-                        .then(function(res) {
-                            const response = typeof res === 'string' ? JSON.parse(res) : res;
-                            if (!response || !response.success) {
-                                alert(t('settings.installedFixes.deleteError', 'Failed to remove fix.'));
+                            .then(function (res) {
+                                const response = typeof res === 'string' ? JSON.parse(res) : res;
+                                if (!response || !response.success) {
+                                    alert(t('settings.installedFixes.deleteError', 'Failed to remove fix.'));
+                                    deleteBtn.dataset.busy = '0';
+                                    deleteBtn.style.opacity = '1';
+                                    deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedFixes.delete', 'Delete') + '</span>';
+                                    return;
+                                }
+
+                                // Poll for unfix status
+                                pollUnfixStatus(fix.appid, itemEl, deleteBtn, container);
+                            })
+                            .catch(function (err) {
+                                alert(t('settings.installedFixes.deleteError', 'Failed to remove fix.') + ' ' + (err && err.message ? err.message : ''));
                                 deleteBtn.dataset.busy = '0';
                                 deleteBtn.style.opacity = '1';
                                 deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedFixes.delete', 'Delete') + '</span>';
-                                return;
-                            }
-
-                            // Poll for unfix status
-                            pollUnfixStatus(fix.appid, itemEl, deleteBtn, container);
-                        })
-                        .catch(function(err) {
-                            alert(t('settings.installedFixes.deleteError', 'Failed to remove fix.') + ' ' + (err && err.message ? err.message : ''));
-                            deleteBtn.dataset.busy = '0';
-                            deleteBtn.style.opacity = '1';
-                            deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedFixes.delete', 'Delete') + '</span>';
-                        });
+                            });
                     },
-                    function() {
+                    function () {
                         // User cancelled - do nothing
                     }
                 );
@@ -1795,7 +1816,7 @@
                 pollCount++;
 
                 Millennium.callServerMethod('skytools', 'GetUnfixStatus', { appid: appid, contentScriptQuery: '' })
-                    .then(function(res) {
+                    .then(function (res) {
                         const response = typeof res === 'string' ? JSON.parse(res) : res;
                         if (!response || !response.success) {
                             setTimeout(checkStatus, 500);
@@ -1810,23 +1831,23 @@
                             itemEl.style.transition = 'all 0.3s ease';
                             itemEl.style.opacity = '0';
                             itemEl.style.transform = 'translateX(-20px)';
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 itemEl.remove();
                                 // Check if list is now empty
                                 if (container.children.length === 0) {
                                     container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #2a475e;border-radius:4px;color:#c7d5e0;text-align:center;">' + t('settings.installedFixes.empty', 'No fixes installed yet.') + '</div>';
                                 }
                             }, 300);
-                            
+
                             // Trigger Steam verification after a short delay
-                            setTimeout(function(){
+                            setTimeout(function () {
                                 try {
                                     const verifyUrl = 'steam://validate/' + appid;
                                     window.location.href = verifyUrl;
                                     backendLog('SkyTools: Running verify for appid ' + appid);
-                                } catch(_) {}
+                                } catch (_) { }
                             }, 1000);
-                            
+
                             return;
                         } else if (status === 'failed' || (status === 'done' && !state.success)) {
                             alert(t('settings.installedFixes.deleteError', 'Failed to remove fix.') + ' ' + (state.error || ''));
@@ -1839,7 +1860,7 @@
                             setTimeout(checkStatus, 500);
                         }
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         setTimeout(checkStatus, 500);
                     });
             }
@@ -1875,7 +1896,7 @@
             container.innerHTML = '<div style="padding:14px;text-align:center;color:#c7d5e0;">' + t('settings.installedLua.loading', 'Scanning for installed Lua scripts...') + '</div>';
 
             Millennium.callServerMethod('skytools', 'GetInstalledLuaScripts', { contentScriptQuery: '' })
-                .then(function(res) {
+                .then(function (res) {
                     const response = typeof res === 'string' ? JSON.parse(res) : res;
                     if (!response || !response.success) {
                         container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #ff5c5c;border-radius:4px;color:#ff5c5c;">' + t('settings.installedLua.error', 'Failed to load installed Lua scripts.') + '</div>';
@@ -1891,7 +1912,7 @@
                     container.innerHTML = '';
 
                     // Check if there are any unknown games
-                    const hasUnknownGames = scripts.some(function(s) {
+                    const hasUnknownGames = scripts.some(function (s) {
                         return s.gameName && s.gameName.startsWith('Unknown Game');
                     });
 
@@ -1909,7 +1930,7 @@
                         container.appendChild(scriptEl);
                     }
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #ff5c5c;border-radius:4px;color:#ff5c5c;">' + t('settings.installedLua.error', 'Failed to load installed Lua scripts.') + '</div>';
                 });
         }
@@ -1917,8 +1938,8 @@
         function createLuaListItem(script, container) {
             const itemEl = document.createElement('div');
             itemEl.style.cssText = 'margin-bottom:12px;padding:14px;background:rgba(11,20,30,0.8);border:1px solid rgba(102,192,244,0.3);border-radius:6px;display:flex;justify-content:space-between;align-items:center;transition:all 0.2s ease;';
-            itemEl.onmouseover = function() { this.style.borderColor = '#66c0f4'; this.style.background = 'rgba(11,20,30,0.95)'; };
-            itemEl.onmouseout = function() { this.style.borderColor = 'rgba(102,192,244,0.3)'; this.style.background = 'rgba(11,20,30,0.8)'; };
+            itemEl.onmouseover = function () { this.style.borderColor = '#66c0f4'; this.style.background = 'rgba(11,20,30,0.95)'; };
+            itemEl.onmouseout = function () { this.style.borderColor = 'rgba(102,192,244,0.3)'; this.style.background = 'rgba(11,20,30,0.8)'; };
 
             const infoDiv = document.createElement('div');
             infoDiv.style.cssText = 'flex:1;';
@@ -1953,14 +1974,14 @@
             deleteBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,80,80,0.12);border:2px solid rgba(255,80,80,0.35);border-radius:12px;color:#ff5050;font-size:18px;text-decoration:none;transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);cursor:pointer;flex-shrink:0;';
             deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
             deleteBtn.title = t('settings.installedLua.delete', 'Remove');
-            deleteBtn.onmouseover = function() {
+            deleteBtn.onmouseover = function () {
                 this.style.background = 'rgba(255,80,80,0.25)';
                 this.style.borderColor = 'rgba(255,80,80,0.6)';
                 this.style.color = '#ff6b6b';
                 this.style.transform = 'translateY(-2px) scale(1.05)';
                 this.style.boxShadow = '0 6px 20px rgba(255,80,80,0.4), 0 0 0 4px rgba(255,80,80,0.1)';
             };
-            deleteBtn.onmouseout = function() {
+            deleteBtn.onmouseout = function () {
                 this.style.background = 'rgba(255,80,80,0.12)';
                 this.style.borderColor = 'rgba(255,80,80,0.35)';
                 this.style.color = '#ff5050';
@@ -1968,14 +1989,14 @@
                 this.style.boxShadow = 'none';
             };
 
-            deleteBtn.addEventListener('click', function(e) {
+            deleteBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (deleteBtn.dataset.busy === '1') return;
 
                 showSkyToolsConfirm(
                     script.gameName || 'SkyTools',
                     t('settings.installedLua.deleteConfirm', 'Remove via SkyTools for this game?'),
-                    function() {
+                    function () {
                         // User confirmed
                         deleteBtn.dataset.busy = '1';
                         deleteBtn.style.opacity = '0.6';
@@ -1985,36 +2006,36 @@
                             appid: script.appid,
                             contentScriptQuery: ''
                         })
-                        .then(function(res) {
-                            const response = typeof res === 'string' ? JSON.parse(res) : res;
-                            if (!response || !response.success) {
-                                alert(t('settings.installedLua.deleteError', 'Failed to remove Lua script.'));
+                            .then(function (res) {
+                                const response = typeof res === 'string' ? JSON.parse(res) : res;
+                                if (!response || !response.success) {
+                                    alert(t('settings.installedLua.deleteError', 'Failed to remove Lua script.'));
+                                    deleteBtn.dataset.busy = '0';
+                                    deleteBtn.style.opacity = '1';
+                                    deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedLua.delete', 'Delete') + '</span>';
+                                    return;
+                                }
+
+                                // Success - remove item from list with animation
+                                itemEl.style.transition = 'all 0.3s ease';
+                                itemEl.style.opacity = '0';
+                                itemEl.style.transform = 'translateX(-20px)';
+                                setTimeout(function () {
+                                    itemEl.remove();
+                                    // Check if list is now empty
+                                    if (container.children.length === 0) {
+                                        container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #2a475e;border-radius:4px;color:#c7d5e0;text-align:center;">' + t('settings.installedLua.empty', 'No Lua scripts installed yet.') + '</div>';
+                                    }
+                                }, 300);
+                            })
+                            .catch(function (err) {
+                                alert(t('settings.installedLua.deleteError', 'Failed to remove Lua script.') + ' ' + (err && err.message ? err.message : ''));
                                 deleteBtn.dataset.busy = '0';
                                 deleteBtn.style.opacity = '1';
                                 deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedLua.delete', 'Delete') + '</span>';
-                                return;
-                            }
-
-                            // Success - remove item from list with animation
-                            itemEl.style.transition = 'all 0.3s ease';
-                            itemEl.style.opacity = '0';
-                            itemEl.style.transform = 'translateX(-20px)';
-                            setTimeout(function() {
-                                itemEl.remove();
-                                // Check if list is now empty
-                                if (container.children.length === 0) {
-                                    container.innerHTML = '<div style="padding:14px;background:#102039;border:1px solid #2a475e;border-radius:4px;color:#c7d5e0;text-align:center;">' + t('settings.installedLua.empty', 'No Lua scripts installed yet.') + '</div>';
-                                }
-                            }, 300);
-                        })
-                        .catch(function(err) {
-                            alert(t('settings.installedLua.deleteError', 'Failed to remove Lua script.') + ' ' + (err && err.message ? err.message : ''));
-                            deleteBtn.dataset.busy = '0';
-                            deleteBtn.style.opacity = '1';
-                            deleteBtn.innerHTML = '<span><i class="fa-solid fa-trash"></i> ' + t('settings.installedLua.delete', 'Delete') + '</span>';
-                        });
+                            });
                     },
-                    function() {
+                    function () {
                         // User cancelled - do nothing
                     }
                 );
@@ -2030,7 +2051,7 @@
             saveBtn.style.opacity = '0.6';
             contentWrap.innerHTML = '<div style="padding:20px;color:#c7d5e0;">' + t('common.status.loading', 'Loading...') + '</div>';
 
-            return fetchSettingsConfig(force).then(function(config){
+            return fetchSettingsConfig(force).then(function (config) {
                 state.config = {
                     schemaVersion: config.schemaVersion,
                     schema: Array.isArray(config.schema) ? config.schema : [],
@@ -2042,14 +2063,14 @@
                 applyStaticTranslations();
                 renderSettings();
                 setStatus('', '#c7d5e0');
-            }).catch(function(err){
+            }).catch(function (err) {
                 const message = err && err.message ? err.message : t('settings.error', 'Failed to load settings.');
                 contentWrap.innerHTML = '<div style="padding:20px;color:#ff5c5c;">' + message + '</div>';
                 setStatus(t('common.status.error', 'Error') + ': ' + message, '#ff5c5c');
             });
         }
 
-        backBtn.addEventListener('click', function(e) {
+        backBtn.addEventListener('click', function (e) {
             e.preventDefault();
             if (typeof onBack === 'function') {
                 overlay.remove();
@@ -2062,23 +2083,23 @@
         btnRow.appendChild(backBtn);
         btnRow.appendChild(rightButtons);
 
-        refreshBtn.addEventListener('click', function(e){
+        refreshBtn.addEventListener('click', function (e) {
             e.preventDefault();
             if (refreshBtn.dataset.busy === '1') return;
             refreshBtn.dataset.busy = '1';
-            handleLoad(true).finally(function(){
+            handleLoad(true).finally(function () {
                 refreshBtn.dataset.busy = '0';
                 refreshBtn.style.opacity = '1';
                 applyStaticTranslations();
             });
         });
 
-        saveBtn.addEventListener('click', function(e){
+        saveBtn.addEventListener('click', function (e) {
             e.preventDefault();
             if (saveBtn.dataset.disabled === '1' || saveBtn.dataset.busy === '1') return;
 
             const changes = collectChanges();
-            try { backendLog('SkyTools: collectChanges payload ' + JSON.stringify(changes)); } catch(_) {}
+            try { backendLog('SkyTools: collectChanges payload ' + JSON.stringify(changes)); } catch (_) { }
             if (!changes || Object.keys(changes).length === 0) {
                 setStatus(t('settings.noChanges', 'No changes to save.'), '#c7d5e0');
                 updateSaveState();
@@ -2091,12 +2112,12 @@
             saveBtn.style.opacity = '0.6';
 
             const payloadToSend = JSON.parse(JSON.stringify(changes));
-            try { backendLog('SkyTools: sending settings payload ' + JSON.stringify(payloadToSend)); } catch(_) {}
+            try { backendLog('SkyTools: sending settings payload ' + JSON.stringify(payloadToSend)); } catch (_) { }
             // Pass flattened keys so Millennium handles the RPC arguments as expected.
             Millennium.callServerMethod('skytools', 'ApplySettingsChanges', {
                 contentScriptQuery: '',
                 changesJson: JSON.stringify(payloadToSend)
-            }).then(function(res){
+            }).then(function (res) {
                 const response = typeof res === 'string' ? JSON.parse(res) : res;
                 if (!response || response.success !== true) {
                     if (response && response.errors) {
@@ -2135,7 +2156,7 @@
                             window.__SkyToolsSettings.language = response.language;
                         }
                     }
-                } catch(_) {}
+                } catch (_) { }
 
                 if (response && response.translations && typeof response.translations === 'object') {
                     applyTranslationBundle({
@@ -2149,26 +2170,26 @@
 
                 renderSettings();
                 setStatus(t('settings.saveSuccess', 'Settings saved successfully.'), '#8bc34a');
-            }).catch(function(err){
+            }).catch(function (err) {
                 const message = err && err.message ? err.message : t('settings.saveError', 'Failed to save settings.');
                 setStatus(message, '#ff5c5c');
-            }).finally(function(){
+            }).finally(function () {
                 saveBtn.dataset.busy = '0';
                 applyStaticTranslations();
                 updateSaveState();
             });
         });
 
-        closeIconBtn.addEventListener('click', function(e){
+        closeIconBtn.addEventListener('click', function (e) {
             e.preventDefault();
             overlay.remove();
         });
 
 
-        overlay.addEventListener('click', function(e){
+        overlay.addEventListener('click', function (e) {
             if (e.target === overlay) {
-            overlay.remove();
-        }
+                overlay.remove();
+            }
         });
 
         handleLoad(!!forceRefresh);
@@ -2180,14 +2201,14 @@
             // Remove all settings overlays (robust against older NodeList forEach support)
             var list = document.getElementsByClassName('skytools-settings-overlay');
             while (list && list.length > 0) {
-                try { list[0].remove(); } catch(_) { break; }
+                try { list[0].remove(); } catch (_) { break; }
             }
             // Also remove any download/progress overlays if present
             var list2 = document.getElementsByClassName('skytools-overlay');
             while (list2 && list2.length > 0) {
-                try { list2[0].remove(); } catch(_) { break; }
+                try { list2[0].remove(); } catch (_) { break; }
             }
-        } catch(_) {}
+        } catch (_) { }
     }
 
     // Custom modern alert dialog
@@ -2219,10 +2240,10 @@
         okBtn.className = 'skytools-btn primary';
         okBtn.style.minWidth = '140px';
         okBtn.innerHTML = `<span>${lt('Close')}</span>`;
-        okBtn.onclick = function(e) {
+        okBtn.onclick = function (e) {
             e.preventDefault();
             overlay.remove();
-            try { onClose && onClose(); } catch(_) {}
+            try { onClose && onClose(); } catch (_) { }
         };
 
         btnRow.appendChild(okBtn);
@@ -2232,10 +2253,10 @@
         modal.appendChild(btnRow);
         overlay.appendChild(modal);
 
-        overlay.addEventListener('click', function(e) {
+        overlay.addEventListener('click', function (e) {
             if (e.target === overlay) {
                 overlay.remove();
-                try { onClose && onClose(); } catch(_) {}
+                try { onClose && onClose(); } catch (_) { }
             }
         });
 
@@ -2246,9 +2267,9 @@
     function ShowSkyToolsAlert(title, message) {
         try {
             showSkyToolsAlert(title, message);
-        } catch(err) {
+        } catch (err) {
             backendLog('SkyTools: Alert error, falling back: ' + err);
-            try { alert(String(title) + '\n\n' + String(message)); } catch(_) {}
+            try { alert(String(title) + '\n\n' + String(message)); } catch (_) { }
         }
     }
 
@@ -2285,20 +2306,20 @@
         cancelBtn.className = 'skytools-btn';
         cancelBtn.style.flex = '1';
         cancelBtn.innerHTML = `<span>${lt('Cancel')}</span>`;
-        cancelBtn.onclick = function(e) {
+        cancelBtn.onclick = function (e) {
             e.preventDefault();
             overlay.remove();
-            try { onCancel && onCancel(); } catch(_) {}
+            try { onCancel && onCancel(); } catch (_) { }
         };
         const confirmBtn = document.createElement('a');
         confirmBtn.href = '#';
         confirmBtn.className = 'skytools-btn primary';
         confirmBtn.style.flex = '1';
         confirmBtn.innerHTML = `<span>${lt('Confirm')}</span>`;
-        confirmBtn.onclick = function(e) {
+        confirmBtn.onclick = function (e) {
             e.preventDefault();
             overlay.remove();
-            try { onConfirm && onConfirm(); } catch(_) {}
+            try { onConfirm && onConfirm(); } catch (_) { }
         };
 
         btnRow.appendChild(cancelBtn);
@@ -2309,10 +2330,10 @@
         modal.appendChild(btnRow);
         overlay.appendChild(modal);
 
-        overlay.addEventListener('click', function(e) {
+        overlay.addEventListener('click', function (e) {
             if (e.target === overlay) {
                 overlay.remove();
-                try { onCancel && onCancel(); } catch(_) {}
+                try { onCancel && onCancel(); } catch (_) { }
             }
         });
 
@@ -2343,7 +2364,7 @@
                     rspan.textContent = restartText;
                 }
             }
-            
+
             // Update Add via SkyTools button
             const skytoolsBtn = document.querySelector('.skytools-button');
             if (skytoolsBtn) {
@@ -2355,7 +2376,7 @@
                     span.textContent = addViaText;
                 }
             }
-        } catch(err) {
+        } catch (err) {
             backendLog('SkyTools: updateButtonTranslations error: ' + err);
         }
     }
@@ -2373,27 +2394,27 @@
             window.__SkyToolsPresenceCheckInFlight = false;
             window.__SkyToolsPresenceCheckAppId = undefined;
             // Ensure translations are loaded and update existing buttons
-            ensureTranslationsLoaded(false).then(function() {
+            ensureTranslationsLoaded(false).then(function () {
                 updateButtonTranslations();
             });
         }
-        
+
         // Look for the SteamDB buttons container with multiple fallback selectors
-        let steamdbContainer = document.querySelector('.steamdb-buttons') || 
-                                document.querySelector('[data-steamdb-buttons]') ||
-                                document.querySelector('.apphub_OtherSiteInfo');
-        
+        let steamdbContainer = document.querySelector('.steamdb-buttons') ||
+            document.querySelector('[data-steamdb-buttons]') ||
+            document.querySelector('.apphub_OtherSiteInfo');
+
         // Additional fallback selectors for Steam's current structure
         if (!steamdbContainer) {
             // Try to find common Steam page containers
             steamdbContainer = document.querySelector('.apphub_OtherSiteInfo') ||
-                              document.querySelector('.apphub_AppName')?.parentElement?.querySelector('.apphub_OtherSiteInfo') ||
-                              document.querySelector('[class*="OtherSiteInfo"]') ||
-                              document.querySelector('[class*="steamdb"]') ||
-                              document.querySelector('.apphub_AppName')?.closest('.apphub_AppHub')?.querySelector('[class*="button"]')?.parentElement ||
-                              document.querySelector('.apphub_AppName')?.parentElement?.querySelector('div[class*="btn"]')?.parentElement;
+                document.querySelector('.apphub_AppName')?.parentElement?.querySelector('.apphub_OtherSiteInfo') ||
+                document.querySelector('[class*="OtherSiteInfo"]') ||
+                document.querySelector('[class*="steamdb"]') ||
+                document.querySelector('.apphub_AppName')?.closest('.apphub_AppHub')?.querySelector('[class*="button"]')?.parentElement ||
+                document.querySelector('.apphub_AppName')?.parentElement?.querySelector('div[class*="btn"]')?.parentElement;
         }
-        
+
         // If still not found, try to find any container with buttons that might work
         if (!steamdbContainer) {
             // Look for containers with multiple links/buttons (likely the right area)
@@ -2416,11 +2437,11 @@
             // Always update translations for existing buttons (even if not a page change)
             const existingBtn = document.querySelector('.skytools-button');
             if (existingBtn) {
-                ensureTranslationsLoaded(false).then(function() {
+                ensureTranslationsLoaded(false).then(function () {
                     updateButtonTranslations();
                 });
             }
-            
+
             // Check if button already exists to avoid duplicates
             if (existingBtn || window.__SkyToolsButtonInserted) {
                 if (!logState.existsOnce) { backendLog('SkyTools button already exists, skipping'); logState.existsOnce = true; }
@@ -2453,21 +2474,21 @@
                             restartBtn.style.marginLeft = cs.marginLeft;
                             restartBtn.style.marginRight = cs.marginRight;
                         }
-                    } catch(_) {}
+                    } catch (_) { }
 
-                    restartBtn.addEventListener('click', function(e){
+                    restartBtn.addEventListener('click', function (e) {
                         e.preventDefault();
                         try {
                             // Ensure any settings overlays are closed before confirm
                             closeSettingsOverlay();
                             showSkyToolsConfirm('SkyTools', lt('Restart Steam now?'),
-                                function() { try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch(_) {} },
-                                function() { /* Cancel - do nothing */ }
+                                function () { try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch (_) { } },
+                                function () { /* Cancel - do nothing */ }
                             );
-                        } catch(_) {
+                        } catch (_) {
                             showSkyToolsConfirm('SkyTools', lt('Restart Steam now?'),
-                                function() { try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch(_) {} },
-                                function() { /* Cancel - do nothing */ }
+                                function () { try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch (_) { } },
+                                function () { /* Cancel - do nothing */ }
                             );
                         }
                     });
@@ -2496,7 +2517,7 @@
                                     iconBtn.style.marginLeft = cs.marginLeft;
                                     iconBtn.style.marginRight = cs.marginRight;
                                 }
-                            } catch(_) {}
+                            } catch (_) { }
                             const ispan = document.createElement('span');
                             const img = document.createElement('img');
                             img.alt = '';
@@ -2505,7 +2526,7 @@
                             img.style.verticalAlign = 'middle';
                             // Try to fetch data URL for the icon from backend to avoid path issues
                             try {
-                                Millennium.callServerMethod('skytools', 'GetIconDataUrl', { contentScriptQuery: '' }).then(function(res){
+                                Millennium.callServerMethod('skytools', 'GetIconDataUrl', { contentScriptQuery: '' }).then(function (res) {
                                     try {
                                         const payload = typeof res === 'string' ? JSON.parse(res) : res;
                                         if (payload && payload.success && payload.dataUrl) {
@@ -2513,33 +2534,33 @@
                                         } else {
                                             img.src = 'SkyTools/skytools-icon.png';
                                         }
-                                    } catch(_) { img.src = 'SkyTools/skytools-icon.png'; }
+                                    } catch (_) { img.src = 'SkyTools/skytools-icon.png'; }
                                 });
-                            } catch(_) {
+                            } catch (_) {
                                 img.src = 'SkyTools/skytools-icon.png';
                             }
                             // If image fails, fallback to inline SVG gear
-                            img.onerror = function(){
+                            img.onerror = function () {
                                 ispan.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9.94 3.06l-2.12-.35a7.962 7.962 0 00-1.02-2.46l1.29-1.72a.75.75 0 00-.09-.97l-1.41-1.41a.75.75 0 00-.97-.09l-1.72 1.29c-.77-.44-1.6-.78-2.46-1.02L13.06 2.06A.75.75 0 0012.31 2h-1.62a.75.75 0 00-.75.65l-.35 2.12a7.962 7.962 0 00-2.46 1.02L5 4.6a.75.75 0 00-.97.09L2.62 6.1a.75.75 0 00-.09.97l1.29 1.72c-.44.77-.78 1.6-1.02 2.46l-2.12.35a.75.75 0 00-.65.75v1.62c0 .37.27.69.63.75l2.14.36c.24.86.58 1.69 1.02 2.46L2.53 18a.75.75 0 00.09.97l1.41 1.41c.26.26.67.29.97.09l1.72-1.29c.77.44 1.6.78 2.46 1.02l.35 2.12c.06.36.38.63.75.63h1.62c.37 0 .69-.27.75-.63l.36-2.14c.86-.24 1.69-.58 2.46-1.02l1.72 1.29c.3.2.71.17.97-.09l1.41-1.41c.26-.26.29-.67.09-.97l-1.29-1.72c.44-.77.78-1.6 1.02-2.46l2.12-.35c.36-.06.63-.38.63-.75v-1.62a.75.75 0 00-.65-.75z"/></svg>';
                             };
                             ispan.appendChild(img);
                             iconBtn.appendChild(ispan);
-                            iconBtn.addEventListener('click', function(e){ e.preventDefault(); showSettingsPopup(); });
+                            iconBtn.addEventListener('click', function (e) { e.preventDefault(); showSettingsPopup(); });
                             restartBtn.after(iconBtn);
                             window.__SkyToolsIconInserted = true;
                             backendLog('Inserted Icon button');
                         }
-                    } catch(_) {}
+                    } catch (_) { }
                     window.__SkyToolsRestartInserted = true;
                     backendLog('Inserted Restart Steam button');
                 }
-            } catch(_) {}
+            } catch (_) { }
 
             // If SkyTools button already existed, stop here
             if (document.querySelector('.skytools-button') || window.__SkyToolsButtonInserted) {
                 return;
             }
-            
+
             // Create the SkyTools button modeled after existing SteamDB/PCGW buttons
             let referenceBtn = steamdbContainer.querySelector('a');
             const skytoolsButton = document.createElement('a');
@@ -2564,14 +2585,14 @@
                     skytoolsButton.style.marginLeft = cs.marginLeft;
                     skytoolsButton.style.marginRight = cs.marginRight;
                 }
-            } catch(_) {}
-            
+            } catch (_) { }
+
             // Local click handler suppressed; delegated handler manages actions
-            skytoolsButton.addEventListener('click', function(e) {
+            skytoolsButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 backendLog('SkyTools button clicked (delegated handler will process)');
             });
-            
+
             // Before inserting, ask backend if SkyTools already exists for this appid
             try {
                 const match = window.location.href.match(/https:\/\/store\.steampowered\.com\/app\/(\d+)/) || window.location.href.match(/https:\/\/steamcommunity\.com\/app\/(\d+)/);
@@ -2584,7 +2605,7 @@
                     window.__SkyToolsPresenceCheckInFlight = true;
                     window.__SkyToolsPresenceCheckAppId = appid;
                     window.__SkyToolsCurrentAppId = appid;
-                    Millennium.callServerMethod('skytools', 'HasSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function(res){
+                    Millennium.callServerMethod('skytools', 'HasSkyToolsForApp', { appid, contentScriptQuery: '' }).then(function (res) {
                         try {
                             const payload = typeof res === 'string' ? JSON.parse(res) : res;
                             if (payload && payload.success && payload.exists === true) {
@@ -2606,7 +2627,7 @@
                                 backendLog('SkyTools button inserted');
                             }
                             window.__SkyToolsPresenceCheckInFlight = false;
-                        } catch(_) {
+                        } catch (_) {
                             if (!document.querySelector('.skytools-button') && !window.__SkyToolsButtonInserted) {
                                 steamdbContainer.appendChild(skytoolsButton);
                                 window.__SkyToolsButtonInserted = true;
@@ -2629,7 +2650,7 @@
                         backendLog('SkyTools button inserted');
                     }
                 }
-            } catch(_) {
+            } catch (_) {
                 if (!document.querySelector('.skytools-button') && !window.__SkyToolsButtonInserted) {
                     const restartExisting = steamdbContainer.querySelector('.skytools-restart-button');
                     if (restartExisting && restartExisting.after) {
@@ -2644,7 +2665,7 @@
                 }
             }
         } else {
-            if (!logState.missingOnce) { 
+            if (!logState.missingOnce) {
                 backendLog('SkyTools: steamdbContainer not found on this page');
                 backendLog('SkyTools: Current URL: ' + window.location.href);
                 // Log what we tried to find
@@ -2663,31 +2684,31 @@
                 // Try to find any buttons/links on the page for debugging
                 const allLinks = document.querySelectorAll('a[href]');
                 backendLog('SkyTools: Found ' + allLinks.length + ' links on page');
-                logState.missingOnce = true; 
+                logState.missingOnce = true;
             }
         }
     }
-    
+
     // Try to add the button immediately if DOM is ready
     function onFrontendReady() {
         addSkyToolsButton();
         // Ask backend if there is a queued startup message from InitApis
         try {
             if (typeof Millennium !== 'undefined' && typeof Millennium.callServerMethod === 'function') {
-                Millennium.callServerMethod('skytools', 'GetInitApisMessage', { contentScriptQuery: '' }).then(function(res){
+                Millennium.callServerMethod('skytools', 'GetInitApisMessage', { contentScriptQuery: '' }).then(function (res) {
                     try {
                         const payload = typeof res === 'string' ? JSON.parse(res) : res;
                         if (payload && payload.message) {
                             const msg = String(payload.message);
                             // Check if this is an update message (contains "update" or "restart")
                             const isUpdateMsg = msg.toLowerCase().includes('update') || msg.toLowerCase().includes('restart');
-                            
+
                             if (isUpdateMsg) {
                                 // For update messages, use confirm dialog with OK (restart) and Cancel options
-                                showSkyToolsConfirm('SkyTools', msg, function() {
+                                showSkyToolsConfirm('SkyTools', msg, function () {
                                     // User clicked Confirm - restart Steam
-                                    try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch(_) {}
-                                }, function() {
+                                    try { Millennium.callServerMethod('skytools', 'RestartSteam', { contentScriptQuery: '' }); } catch (_) { }
+                                }, function () {
                                     // User clicked Cancel - do nothing (just closes dialog)
                                 });
                             } else {
@@ -2695,34 +2716,34 @@
                                 ShowSkyToolsAlert('SkyTools', msg);
                             }
                         }
-                    } catch(_){ }
+                    } catch (_) { }
                 });
                 // Also show loaded apps list if present (only once per session)
                 try {
                     if (!sessionStorage.getItem('SkyToolsLoadedAppsGate')) {
                         sessionStorage.setItem('SkyToolsLoadedAppsGate', '1');
-                        Millennium.callServerMethod('skytools', 'ReadLoadedApps', { contentScriptQuery: '' }).then(function(res){
+                        Millennium.callServerMethod('skytools', 'ReadLoadedApps', { contentScriptQuery: '' }).then(function (res) {
                             try {
                                 const payload = typeof res === 'string' ? JSON.parse(res) : res;
                                 const apps = (payload && payload.success && Array.isArray(payload.apps)) ? payload.apps : [];
                                 if (apps.length > 0) {
                                     showLoadedAppsPopup(apps);
                                 }
-                            } catch(_){ }
+                            } catch (_) { }
                         });
                     }
-                } catch(_){ }
+                } catch (_) { }
             }
-        } catch(_) { }
+        } catch (_) { }
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', onFrontendReady);
     } else {
         onFrontendReady();
     }
-    
+
     // Delegate click handling in case the DOM is re-rendered and listeners are lost
-    document.addEventListener('click', function(evt) {
+    document.addEventListener('click', function (evt) {
         const anchor = evt.target && (evt.target.closest ? evt.target.closest('.skytools-button') : null);
         if (anchor) {
             evt.preventDefault();
@@ -2744,21 +2765,21 @@
                     Millennium.callServerMethod('skytools', 'StartAddViaSkyTools', { appid, contentScriptQuery: '' });
                     startPolling(appid);
                 }
-            } catch(_) {}
+            } catch (_) { }
         }
     }, true);
 
     // Poll backend for progress and update progress bar and text
-    function startPolling(appid){
+    function startPolling(appid) {
         let done = false;
         const timer = setInterval(() => {
             if (done) { clearInterval(timer); return; }
             try {
-                Millennium.callServerMethod('skytools', 'GetAddViaSkyToolsStatus', { appid, contentScriptQuery: '' }).then(function(res){
+                Millennium.callServerMethod('skytools', 'GetAddViaSkyToolsStatus', { appid, contentScriptQuery: '' }).then(function (res) {
                     try {
                         const payload = typeof res === 'string' ? JSON.parse(res) : res;
                         const st = payload && payload.state ? payload.state : {};
-                        
+
                         // Try to find overlay (may or may not be visible)
                         const overlay = document.querySelector('.skytools-overlay');
                         const title = overlay ? overlay.querySelector('.skytools-title') : null;
@@ -2766,7 +2787,7 @@
                         const wrap = overlay ? overlay.querySelector('.skytools-progress-wrap') : null;
                         const percent = overlay ? overlay.querySelector('.skytools-percent') : null;
                         const bar = overlay ? overlay.querySelector('.skytools-progress-bar') : null;
-                        
+
                         // Update UI if overlay is present
                         if (st.currentApi && title) title.textContent = lt('SkyTools · {api}').replace('{api}', st.currentApi);
                         if (status) {
@@ -2777,12 +2798,12 @@
                             if (st.status === 'done') status.textContent = lt('Finishing…');
                             if (st.status === 'failed') status.textContent = lt('Failed');
                         }
-                        if (st.status === 'downloading'){
+                        if (st.status === 'downloading') {
                             // reveal progress UI on first download tick (if overlay visible)
                             if (wrap && wrap.style.display === 'none') wrap.style.display = 'block';
                             if (percent && percent.style.display === 'none') percent.style.display = 'block';
                             const total = st.totalBytes || 0; const read = st.bytesRead || 0;
-                            let pct = total > 0 ? Math.floor((read/total)*100) : (read ? 1 : 0);
+                            let pct = total > 0 ? Math.floor((read / total) * 100) : (read ? 1 : 0);
                             if (pct > 100) pct = 100; if (pct < 0) pct = 0;
                             if (bar) bar.style.width = pct + '%';
                             if (percent) percent.textContent = pct + '%';
@@ -2790,7 +2811,7 @@
                             const cancelBtn = overlay ? overlay.querySelector('.skytools-cancel-btn') : null;
                             if (cancelBtn) cancelBtn.style.display = '';
                         }
-                        if (st.status === 'done'){
+                        if (st.status === 'done') {
                             // Update popup if visible
                             if (bar) bar.style.width = '100%';
                             if (percent) percent.textContent = '100%';
@@ -2802,7 +2823,7 @@
                             if (hideBtn) hideBtn.innerHTML = '<span>' + lt('Close') + '</span>';
                             // hide progress visuals after a short beat
                             if (wrap || percent) {
-                            setTimeout(function(){ if (wrap) wrap.style.display = 'none'; if (percent) percent.style.display = 'none'; }, 300);
+                                setTimeout(function () { if (wrap) wrap.style.display = 'none'; if (percent) percent.style.display = 'none'; }, 300);
                             }
                             done = true; clearInterval(timer);
                             runState.inProgress = false; runState.appid = null;
@@ -2812,7 +2833,7 @@
                                 btnEl.parentElement.removeChild(btnEl);
                             }
                         }
-                        if (st.status === 'failed'){
+                        if (st.status === 'failed') {
                             // show error in the popup if visible
                             if (status) status.textContent = lt('Failed: {error}').replace('{error}', st.error || lt('Unknown error'));
                             // Hide Cancel button and update Hide to Close
@@ -2825,16 +2846,16 @@
                             done = true; clearInterval(timer);
                             runState.inProgress = false; runState.appid = null;
                         }
-                    } catch(_){ }
+                    } catch (_) { }
                 });
-            } catch(_){ clearInterval(timer); }
+            } catch (_) { clearInterval(timer); }
         }, 300);
     }
-    
+
     // Also try after a delay to catch dynamically loaded content
     setTimeout(addSkyToolsButton, 1000);
     setTimeout(addSkyToolsButton, 3000);
-    
+
     // Listen for URL changes (Steam uses pushState for navigation)
     let lastUrl = window.location.href;
     function checkUrlChange() {
@@ -2848,7 +2869,7 @@
             window.__SkyToolsPresenceCheckInFlight = false;
             window.__SkyToolsPresenceCheckAppId = undefined;
             // Update translations and re-add buttons
-            ensureTranslationsLoaded(false).then(function() {
+            ensureTranslationsLoaded(false).then(function () {
                 updateButtonTranslations();
                 addSkyToolsButton();
             });
@@ -2860,20 +2881,20 @@
     // Override pushState/replaceState to detect navigation
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
-    history.pushState = function() {
+    history.pushState = function () {
         originalPushState.apply(history, arguments);
         setTimeout(checkUrlChange, 100);
     };
-    history.replaceState = function() {
+    history.replaceState = function () {
         originalReplaceState.apply(history, arguments);
         setTimeout(checkUrlChange, 100);
     };
-    
+
     // Use MutationObserver to catch dynamically added content
     if (typeof MutationObserver !== 'undefined') {
-        const observer = new MutationObserver(function(mutations) {
+        const observer = new MutationObserver(function (mutations) {
             let shouldRetry = false;
-            mutations.forEach(function(mutation) {
+            mutations.forEach(function (mutation) {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                     // Check if any added node might be a container we're looking for
                     for (let node of mutation.addedNodes) {
@@ -2899,17 +2920,17 @@
                 }
             });
         });
-        
+
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
     }
-    
+
     // Periodic retry mechanism in case container appears later
     let retryCount = 0;
     const maxRetries = 20; // Try for up to 20 seconds
-    const retryInterval = setInterval(function() {
+    const retryInterval = setInterval(function () {
         if (document.querySelector('.skytools-button')) {
             clearInterval(retryInterval);
             return;
@@ -2941,16 +2962,17 @@
         body.style.cssText = 'font-size:14px;line-height:1.8;margin-bottom:16px;max-height:320px;overflow:auto;padding:16px;border:1px solid rgba(102,192,244,0.3);border-radius:12px;background:rgba(11,20,30,0.6);';
         if (apps && apps.length) {
             const list = document.createElement('div');
-            apps.forEach(function(item){
+            apps.forEach(function (item) {
                 const a = document.createElement('a');
                 a.href = 'steam://install/' + String(item.appid);
                 a.textContent = String(item.name || item.appid);
                 a.style.cssText = 'display:block;color:#c7d5e0;text-decoration:none;padding:10px 16px;margin-bottom:8px;background:rgba(102,192,244,0.08);border:1px solid rgba(102,192,244,0.2);border-radius:4px;transition:all 0.3s ease;';
-                a.onmouseover = function() { this.style.background = 'rgba(102,192,244,0.2)'; this.style.borderColor = '#66c0f4'; this.style.transform = 'translateX(4px)'; this.style.color = '#fff'; };
-                a.onmouseout = function() { this.style.background = 'rgba(102,192,244,0.08)'; this.style.borderColor = 'rgba(102,192,244,0.2)'; this.style.transform = 'translateX(0)'; this.style.color = '#c7d5e0'; };
-                a.onclick = function(e){ e.preventDefault(); try { window.location.href = a.href; } catch(_) {} };
-                a.oncontextmenu = function(e){ e.preventDefault(); const url = 'https://steamdb.info/app/' + String(item.appid) + '/';
-                    try { Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url, contentScriptQuery: '' }); } catch(_) {}
+                a.onmouseover = function () { this.style.background = 'rgba(102,192,244,0.2)'; this.style.borderColor = '#66c0f4'; this.style.transform = 'translateX(4px)'; this.style.color = '#fff'; };
+                a.onmouseout = function () { this.style.background = 'rgba(102,192,244,0.08)'; this.style.borderColor = 'rgba(102,192,244,0.2)'; this.style.transform = 'translateX(0)'; this.style.color = '#c7d5e0'; };
+                a.onclick = function (e) { e.preventDefault(); try { window.location.href = a.href; } catch (_) { } };
+                a.oncontextmenu = function (e) {
+                    e.preventDefault(); const url = 'https://steamdb.info/app/' + String(item.appid) + '/';
+                    try { Millennium.callServerMethod('skytools', 'OpenExternalUrl', { url, contentScriptQuery: '' }); } catch (_) { }
                 };
                 list.appendChild(a);
             });
@@ -2968,14 +2990,14 @@
         dismissBtn.className = 'btnv6_blue_hoverfade btn_medium';
         dismissBtn.innerHTML = '<span>' + lt('Dismiss') + '</span>';
         dismissBtn.href = '#';
-        dismissBtn.onclick = function(e){ e.preventDefault(); try { Millennium.callServerMethod('skytools', 'DismissLoadedApps', { contentScriptQuery: '' }); } catch(_) {} try { sessionStorage.setItem('SkyToolsLoadedAppsShown', '1'); } catch(_) {} overlay.remove(); };
+        dismissBtn.onclick = function (e) { e.preventDefault(); try { Millennium.callServerMethod('skytools', 'DismissLoadedApps', { contentScriptQuery: '' }); } catch (_) { } try { sessionStorage.setItem('SkyToolsLoadedAppsShown', '1'); } catch (_) { } overlay.remove(); };
         btnRow.appendChild(instructionText);
         btnRow.appendChild(dismissBtn);
         modal.appendChild(title);
         modal.appendChild(body);
         modal.appendChild(btnRow);
         overlay.appendChild(modal);
-        overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.remove(); });
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
         document.body.appendChild(overlay);
     }
 })();

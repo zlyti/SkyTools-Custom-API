@@ -90,6 +90,20 @@ def check_for_fixes(appid: int) -> str:
         if result["onlineFix"]["status"] == 0:
             result["onlineFix"]["status"] = 0
 
+    try:
+        # Check Custom API for FreeTP fix
+        freetp_url = f"https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/{appid}_freetp.zip"
+        # We use a short timeout since it's a raw github check
+        resp = client.head(freetp_url, follow_redirects=True, timeout=5)
+        # Github returns 200 for existing files
+        result["freeTp"] = {"status": resp.status_code, "available": resp.status_code == 200}
+        if resp.status_code == 200:
+            result["freeTp"]["url"] = freetp_url
+        logger.log(f"SkyTools: FreeTP check ({freetp_url}) for {appid} -> {resp.status_code}")
+    except Exception as exc:
+        logger.warn(f"SkyTools: FreeTP check failed for {appid}: {exc}")
+        result["freeTp"] = {"status": 0, "available": False}
+
     return json.dumps(result)
 
 
