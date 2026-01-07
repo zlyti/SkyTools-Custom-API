@@ -1,4 +1,4 @@
-"""Filesystem path helpers for the SkyTools backend."""
+"""Filesystem path helpers for the LuaTools backend."""
 
 import os
 

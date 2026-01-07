@@ -1,4 +1,4 @@
-"""Shared HTTP client management for the SkyTools backend."""
+"""Shared HTTP client management for the LuaTools backend."""
 
 from typing import Optional
 

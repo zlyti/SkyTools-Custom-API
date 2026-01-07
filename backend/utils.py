@@ -1,4 +1,4 @@
-"""Generic helpers for file and data handling in the SkyTools backend."""
+"""Generic helpers for file and data handling in the LuaTools backend."""
 
 from __future__ import annotations
 

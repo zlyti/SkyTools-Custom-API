@@ -1,4 +1,4 @@
-"""Steam-related utilities used across SkyTools backend modules."""
+"""Steam-related utilities used across LuaTools backend modules."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def detect_steam_install_path() -> str:
             path = None
 
     _STEAM_INSTALL_PATH = path
-    logger.log(f"SkyTools: Steam install path set to {_STEAM_INSTALL_PATH}")
+    logger.log(f"LuaTools: Steam install path set to {_STEAM_INSTALL_PATH}")
     return _STEAM_INSTALL_PATH or ""
 
 
@@ -114,7 +114,7 @@ def _find_steam_path() -> str:
             except Exception:
                 pass
         except Exception as exc:
-            logger.warn(f"SkyTools: Failed to read Steam path from registry: {exc}")
+            logger.warn(f"LuaTools: Failed to read Steam path from registry: {exc}")
 
     return ""
 
@@ -130,7 +130,7 @@ def has_lua_for_app(appid: int) -> bool:
         disabled_file = os.path.join(stplug_path, f"{appid}.lua.disabled")
         return os.path.exists(lua_file) or os.path.exists(disabled_file)
     except Exception as exc:
-        logger.error(f"SkyTools (steam_utils): Error checking Lua scripts for app {appid}: {exc}")
+        logger.error(f"LuaTools (steam_utils): Error checking Lua scripts for app {appid}: {exc}")
         return False
 
 
@@ -147,7 +147,7 @@ def get_game_install_path_response(appid: int) -> Dict[str, any]:
 
     library_vdf_path = os.path.join(steam_path, "config", "libraryfolders.vdf")
     if not os.path.exists(library_vdf_path):
-        logger.warn(f"SkyTools: libraryfolders.vdf not found at {library_vdf_path}")
+        logger.warn(f"LuaTools: libraryfolders.vdf not found at {library_vdf_path}")
         return {"success": False, "error": "Could not find libraryfolders.vdf"}
 
     try:
@@ -155,7 +155,7 @@ def get_game_install_path_response(appid: int) -> Dict[str, any]:
             vdf_content = handle.read()
         library_data = _parse_vdf_simple(vdf_content)
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to parse libraryfolders.vdf: {exc}")
+        logger.warn(f"LuaTools: Failed to parse libraryfolders.vdf: {exc}")
         return {"success": False, "error": "Failed to parse libraryfolders.vdf"}
 
     library_folders = library_data.get("libraryfolders", {})
@@ -178,20 +178,20 @@ def get_game_install_path_response(appid: int) -> Dict[str, any]:
     appmanifest_path = None
     if not library_path:
         logger.log(
-            f"SkyTools: appid {appid} not in libraryfolders.vdf, searching all libraries for appmanifest"
+            f"LuaTools: appid {appid} not in libraryfolders.vdf, searching all libraries for appmanifest"
         )
         for lib_path in all_library_paths:
             candidate_path = os.path.join(lib_path, "steamapps", f"appmanifest_{appid}.acf")
             if os.path.exists(candidate_path):
                 library_path = lib_path
                 appmanifest_path = candidate_path
-                logger.log(f"SkyTools: Found appmanifest at {appmanifest_path}")
+                logger.log(f"LuaTools: Found appmanifest at {appmanifest_path}")
                 break
     else:
         appmanifest_path = os.path.join(library_path, "steamapps", f"appmanifest_{appid}.acf")
 
     if not library_path or not appmanifest_path or not os.path.exists(appmanifest_path):
-        logger.log(f"SkyTools: appmanifest not found for {appid} in any library")
+        logger.log(f"LuaTools: appmanifest not found for {appid} in any library")
         return {"success": False, "error": "menu.error.notInstalled"}
 
     try:
@@ -199,21 +199,21 @@ def get_game_install_path_response(appid: int) -> Dict[str, any]:
             manifest_content = handle.read()
         manifest_data = _parse_vdf_simple(manifest_content)
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to parse appmanifest: {exc}")
+        logger.warn(f"LuaTools: Failed to parse appmanifest: {exc}")
         return {"success": False, "error": "Failed to parse appmanifest"}
 
     app_state = manifest_data.get("AppState", {})
     install_dir = app_state.get("installdir", "")
     if not install_dir:
-        logger.warn(f"SkyTools: installdir not found in appmanifest for {appid}")
+        logger.warn(f"LuaTools: installdir not found in appmanifest for {appid}")
         return {"success": False, "error": "Install directory not found"}
 
     full_install_path = os.path.join(library_path, "steamapps", "common", install_dir)
     if not os.path.exists(full_install_path):
-        logger.warn(f"SkyTools: Game install path does not exist: {full_install_path}")
+        logger.warn(f"LuaTools: Game install path does not exist: {full_install_path}")
         return {"success": False, "error": "Game directory not found"}
 
-    logger.log(f"SkyTools: Game install path for {appid}: {full_install_path}")
+    logger.log(f"LuaTools: Game install path for {appid}: {full_install_path}")
     return {
         "success": True,
         "installPath": full_install_path,
@@ -237,7 +237,7 @@ def open_game_folder(path: str) -> bool:
             subprocess.Popen(["xdg-open", path])
         return True
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to open game folder: {exc}")
+        logger.warn(f"LuaTools: Failed to open game folder: {exc}")
         return False
 
 

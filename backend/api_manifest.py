@@ -1,4 +1,4 @@
-"""Management of the SkyTools API manifest (free API list)."""
+"""Management of the LuaTools API manifest (free API list)."""
 
 from __future__ import annotations
 
@@ -104,18 +104,18 @@ def store_last_message(message: str) -> None:
 
 def fetch_free_apis_now(content_script_query: str = "") -> str:
     """Force refresh of the free API manifest."""
-    client = ensure_http_client("SkyTools: FetchFreeApisNow")
+    client = ensure_http_client("LuaTools: FetchFreeApisNow")
     try:
-        logger.log("SkyTools: FetchFreeApisNow invoked")
+        logger.log("LuaTools: FetchFreeApisNow invoked")
         manifest_text = ""
 
         try:
             resp = client.get(API_MANIFEST_URL, follow_redirects=True)
             resp.raise_for_status()
             manifest_text = resp.text
-            logger.log("SkyTools: Fetched manifest from primary URL")
+            logger.log("LuaTools: Fetched manifest from primary URL")
         except Exception as primary_err:
-            logger.warn(f"SkyTools: Primary manifest URL failed ({primary_err}), trying proxy...")
+            logger.warn(f"LuaTools: Primary manifest URL failed ({primary_err}), trying proxy...")
             try:
                 resp = client.get(
                     API_MANIFEST_PROXY_URL,
@@ -124,9 +124,9 @@ def fetch_free_apis_now(content_script_query: str = "") -> str:
                 )
                 resp.raise_for_status()
                 manifest_text = resp.text
-                logger.log("SkyTools: Fetched manifest from proxy URL")
+                logger.log("LuaTools: Fetched manifest from proxy URL")
             except Exception as proxy_err:
-                logger.warn(f"SkyTools: Proxy manifest URL also failed: {proxy_err}")
+                logger.warn(f"LuaTools: Proxy manifest URL also failed: {proxy_err}")
                 return json.dumps(
                     {"success": False, "error": f"Both URLs failed: {primary_err}, {proxy_err}"}
                 )
@@ -144,7 +144,7 @@ def fetch_free_apis_now(content_script_query: str = "") -> str:
 
         return json.dumps({"success": True, "count": count})
     except Exception as exc:
-        logger.warn(f"SkyTools: FetchFreeApisNow failed: {exc}")
+        logger.warn(f"LuaTools: FetchFreeApisNow failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -156,7 +156,7 @@ def load_api_manifest() -> List[Dict[str, Any]]:
     if normalized and normalized != text:
         try:
             write_text(path, normalized)
-            logger.log("SkyTools: Normalized api.json to valid JSON")
+            logger.log("LuaTools: Normalized api.json to valid JSON")
         except Exception:
             pass
         text = normalized
@@ -166,6 +166,6 @@ def load_api_manifest() -> List[Dict[str, Any]]:
         apis = data.get("api_list", [])
         return [api for api in apis if api.get("enabled", False)]
     except Exception as exc:
-        logger.error(f"SkyTools: Failed to parse api.json: {exc}")
+        logger.error(f"LuaTools: Failed to parse api.json: {exc}")
         return []
 

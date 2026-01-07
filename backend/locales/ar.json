@@ -6,7 +6,7 @@
     "credits": "تم تعريب الأداة بواسطة مجتمع [PolarCommunity](https://discord.gg/plr)"
   },
   "strings": {
-    "Add via SkyTools": "إضافة اللعبة للمكتبة",
+    "Add via LuaTools": "إضافة اللعبة للمكتبة",
     "Advanced": "مزايا أخرى",
     "All-In-One Fixes": "إصلاحات شاملة (الكل في واحد)",
     "Apply": "تطبيق",
@@ -60,12 +60,12 @@
     "Loaded free APIs: {count}": "تم تحديث الواجهة:  {count}",
     "Loading fixes...": "جاري تحميل الإصلاحات...",
     "Look for Fixes": "البحث عن الإصلاحات",
-    "SkyTools backend unavailable": "الواجهة غير متوفرة",
-    "SkyTools · AIO Fixes Menu": "SkyTools · قائمة إصلاحات AIO",
-    "SkyTools · Added Games": "SkyTools · الألعاب المضافة",
-    "SkyTools · Fixes Menu": "SkyTools · قائمة الإصلاحات",
-    "SkyTools · Menu": "SkyTools · القائمة",
-    "SkyTools · {api}": "SkyTools · {api}",
+    "LuaTools backend unavailable": "الواجهة غير متوفرة",
+    "LuaTools · AIO Fixes Menu": "LuaTools · قائمة إصلاحات AIO",
+    "LuaTools · Added Games": "LuaTools · الألعاب المضافة",
+    "LuaTools · Fixes Menu": "LuaTools · قائمة الإصلاحات",
+    "LuaTools · Menu": "LuaTools · القائمة",
+    "LuaTools · {api}": "LuaTools · {api}",
     "Manage Game": "إدارة اللعبة",
     "No games found.": "لم يتم العثور على ألعاب!",
     "No generic fix": "لا يوجد إصلاح عام!",
@@ -77,7 +77,7 @@
     "Online-fix found!": "تم العثور على إصلاح الأونلاين!",
     "Only possible thanks to {name} 💜": "شكر خاص لـ {name} 💜",
     "Processing package…": "جاري معالجة الحزمة…",
-    "Remove via SkyTools": "إزالة من المكتبة",
+    "Remove via LuaTools": "إزالة من المكتبة",
     "Removed {count} files. Running Steam verification...": "تمت إزالة {count} الملفات. جاري إعادة التحقق من ملفات اللعبة...",
     "Removing fix files...": "جاري إزالة ملفات الإصلاح...",
     "Restart Steam": "ريستارت ستيم",
@@ -108,9 +108,9 @@
     "menu.remove.confirm": "هل أنت متأكد من حذف اللعبة من المكتبة؟",
     "menu.remove.failure": "فشل إزالة اللعبة من المكتبة",
     "menu.remove.success": "تم حذف اللعبة من المكتبة بنجاح!",
-    "menu.removeSkyTools": "إزالة من المكتبة",
+    "menu.removeLuaTools": "إزالة من المكتبة",
     "menu.settings": "الإعدادات",
-    "menu.title": "SkyTools · القائمة",
+    "menu.title": "LuaTools · القائمة",
     "settings.close": "إغلاق",
     "settings.donateKeys.description": "التبرع بمافتيح فك حماية الألعاب!",
     "settings.donateKeys.label": "تبرع بالمفاتيح",
@@ -132,18 +132,18 @@
     "settings.installedFixes.date": "تاريخ التثبيت:",
     "settings.installedFixes.type": "النوع:",
     "settings.installedFixes.files": "{count} ملف",
-    "settings.installedLua.title": "الألعاب عبر SkyTools",
+    "settings.installedLua.title": "الألعاب عبر LuaTools",
     "settings.installedLua.empty": "لا توجد سكريبتات Lua مثبتة بعد.",
     "settings.installedLua.loading": "جارٍ البحث عن سكريبتات Lua المثبتة...",
     "settings.installedLua.error": "فشل تحميل سكريبتات Lua المثبتة.",
     "settings.installedLua.delete": "إزالة",
-    "settings.installedLua.deleteConfirm": "إزالة عبر SkyTools لهذه اللعبة؟",
-    "settings.installedLua.deleting": "جارٍ الإزالة عبر SkyTools...",
-    "settings.installedLua.deleteSuccess": "تمت الإزالة عبر SkyTools بنجاح!",
-    "settings.installedLua.deleteError": "فشلت الإزالة عبر SkyTools.",
+    "settings.installedLua.deleteConfirm": "إزالة عبر LuaTools لهذه اللعبة؟",
+    "settings.installedLua.deleting": "جارٍ الإزالة عبر LuaTools...",
+    "settings.installedLua.deleteSuccess": "تمت الإزالة عبر LuaTools بنجاح!",
+    "settings.installedLua.deleteError": "فشلت الإزالة عبر LuaTools.",
     "settings.installedLua.modified": "تاريخ التعديل:",
     "settings.installedLua.disabled": "معطل",
-    "settings.installedLua.unknownInfo": "الألعاب التي تظهر 'لعبة غير معروفة' تم تثبيتها من مصادر خارجية (وليس عبر SkyTools).",
+    "settings.installedLua.unknownInfo": "الألعاب التي تظهر 'لعبة غير معروفة' تم تثبيتها من مصادر خارجية (وليس عبر LuaTools).",
     "settings.language.description": "إختر لغة العرض",
     "settings.language.label": "اللغة",
     "settings.language.option.en": "الإنجليزية - English",
@@ -156,7 +156,7 @@
     "settings.saveError": "فشل حفظ الإعدادات.",
     "settings.saveSuccess": "تم حفظ الإعدادات بنجاح!",
     "settings.saving": "جاري الحفظ...",
-    "settings.title": "SkyTools · الإعدادات",
+    "settings.title": "LuaTools · الإعدادات",
     "settings.unsaved": "لم يتم الحفظ !",
     "{fix} applied successfully!": "تم تطبيق {fix} بنجاح!"
   }

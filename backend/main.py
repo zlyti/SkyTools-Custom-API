@@ -23,16 +23,16 @@ from auto_update import (
 )
 from config import WEBKIT_DIR_NAME, WEB_UI_ICON_FILE, WEB_UI_JS_FILE
 from downloads import (
-    cancel_add_via_skytools,
-    delete_skytools_for_app,
+    cancel_add_via_luatools,
+    delete_luatools_for_app,
     dismiss_loaded_apps,
     get_add_status,
     get_icon_data_url,
     get_installed_lua_scripts,
-    has_skytools_for_app,
+    has_luatools_for_app,
     init_applist,
     read_loaded_apps,
-    start_add_via_skytools,
+    start_add_via_luatools,
 )
 from fixes import (
     apply_game_fix,
@@ -90,28 +90,28 @@ def _copy_webkit_files() -> None:
 
     js_src = public_path(WEB_UI_JS_FILE)
     js_dst = os.path.join(steam_ui_path, WEB_UI_JS_FILE)
-    logger.log(f"Copying SkyTools web UI from {js_src} to {js_dst}")
+    logger.log(f"Copying LuaTools web UI from {js_src} to {js_dst}")
     try:
         shutil.copy(js_src, js_dst)
     except Exception as exc:
-        logger.error(f"Failed to copy SkyTools web UI: {exc}")
+        logger.error(f"Failed to copy LuaTools web UI: {exc}")
 
     icon_src = public_path(WEB_UI_ICON_FILE)
     icon_dst = os.path.join(steam_ui_path, WEB_UI_ICON_FILE)
     if os.path.exists(icon_src):
         try:
             shutil.copy(icon_src, icon_dst)
-            logger.log(f"Copied SkyTools icon to {icon_dst}")
+            logger.log(f"Copied LuaTools icon to {icon_dst}")
         except Exception as exc:
-            logger.error(f"Failed to copy SkyTools icon: {exc}")
+            logger.error(f"Failed to copy LuaTools icon: {exc}")
     else:
-        logger.warn(f"SkyTools icon not found at {icon_src}")
+        logger.warn(f"LuaTools icon not found at {icon_src}")
 
 
 def _inject_webkit_files() -> None:
     js_path = os.path.join(WEBKIT_DIR_NAME, WEB_UI_JS_FILE)
     Millennium.add_browser_js(js_path)
-    logger.log(f"SkyTools injected web UI: {js_path}")
+    logger.log(f"LuaTools injected web UI: {js_path}")
 
 
 def InitApis(contentScriptQuery: str = "") -> str:
@@ -138,20 +138,20 @@ def RestartSteam(contentScriptQuery: str = "") -> str:
     return json.dumps({"success": False, "error": "Failed to restart Steam"})
 
 
-def HasSkyToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
-    return has_skytools_for_app(appid)
+def HasLuaToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
+    return has_luatools_for_app(appid)
 
 
-def StartAddViaSkyTools(appid: int, contentScriptQuery: str = "") -> str:
-    return start_add_via_skytools(appid)
+def StartAddViaLuaTools(appid: int, contentScriptQuery: str = "") -> str:
+    return start_add_via_luatools(appid)
 
 
-def GetAddViaSkyToolsStatus(appid: int, contentScriptQuery: str = "") -> str:
+def GetAddViaLuaToolsStatus(appid: int, contentScriptQuery: str = "") -> str:
     return get_add_status(appid)
 
 
-def CancelAddViaSkyTools(appid: int, contentScriptQuery: str = "") -> str:
-    return cancel_add_via_skytools(appid)
+def CancelAddViaLuaTools(appid: int, contentScriptQuery: str = "") -> str:
+    return cancel_add_via_luatools(appid)
 
 
 def GetIconDataUrl(contentScriptQuery: str = "") -> str:
@@ -166,8 +166,8 @@ def DismissLoadedApps(contentScriptQuery: str = "") -> str:
     return dismiss_loaded_apps()
 
 
-def DeleteSkyToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
-    return delete_skytools_for_app(appid)
+def DeleteLuaToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
+    return delete_luatools_for_app(appid)
 
 
 def CheckForFixes(appid: int, contentScriptQuery: str = "") -> str:
@@ -214,6 +214,14 @@ def OpenGameFolder(path: str, contentScriptQuery: str = "") -> str:
     return json.dumps({"success": False, "error": "Failed to open path"})
 
 
+# SKYTOOLS COMPATIBILITY ALIASES
+StartAddViaSkyTools = StartAddViaLuaTools
+GetAddViaSkyToolsStatus = GetAddViaLuaToolsStatus
+CancelAddViaSkyTools = CancelAddViaLuaTools
+DeleteSkyToolsForApp = DeleteLuaToolsForApp
+HasSkyToolsForApp = HasLuaToolsForApp
+
+
 def OpenExternalUrl(url: str, contentScriptQuery: str = "") -> str:
     try:
         value = str(url or "").strip()
@@ -228,7 +236,7 @@ def OpenExternalUrl(url: str, contentScriptQuery: str = "") -> str:
             webbrowser.open(value)
         return json.dumps({"success": True})
     except Exception as exc:
-        logger.warn(f"SkyTools: OpenExternalUrl failed: {exc}")
+        logger.warn(f"LuaTools: OpenExternalUrl failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -246,7 +254,7 @@ def GetSettingsConfig(contentScriptQuery: str = "") -> str:
         }
         return json.dumps(response)
     except Exception as exc:
-        logger.warn(f"SkyTools: GetSettingsConfig failed: {exc}")
+        logger.warn(f"LuaTools: GetSettingsConfig failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -261,10 +269,10 @@ def ApplySettingsChanges(
 
         try:
             logger.log(
-                "SkyTools: ApplySettingsChanges raw argument "
+                "LuaTools: ApplySettingsChanges raw argument "
                 f"type={type(changes)} value={changes!r}"
             )
-            logger.log(f"SkyTools: ApplySettingsChanges kwargs: {kwargs}")
+            logger.log(f"LuaTools: ApplySettingsChanges kwargs: {kwargs}")
         except Exception:
             pass
 
@@ -274,7 +282,7 @@ def ApplySettingsChanges(
             try:
                 payload = json.loads(changes)
             except Exception:
-                logger.warn("SkyTools: Failed to parse changes string payload")
+                logger.warn("LuaTools: Failed to parse changes string payload")
                 return json.dumps({"success": False, "error": "Invalid JSON payload"})
             else:
                 # When a full payload dict was sent as JSON, unwrap keys we expect.
@@ -287,7 +295,7 @@ def ApplySettingsChanges(
                     try:
                         payload = json.loads(payload["changesJson"])
                     except Exception:
-                        logger.warn("SkyTools: Failed to parse changesJson string inside payload")
+                        logger.warn("LuaTools: Failed to parse changesJson string inside payload")
                         return json.dumps({"success": False, "error": "Invalid JSON payload"})
         elif isinstance(changes, dict) and changes:
             # When the bridge passes a dict argument directly.
@@ -295,7 +303,7 @@ def ApplySettingsChanges(
                 try:
                     payload = json.loads(changes["changesJson"])
                 except Exception:
-                    logger.warn("SkyTools: Failed to parse changesJson payload from dict")
+                    logger.warn("LuaTools: Failed to parse changesJson payload from dict")
                     return json.dumps({"success": False, "error": "Invalid JSON payload"})
             elif "changes" in changes:
                 payload = changes.get("changes")
@@ -310,7 +318,7 @@ def ApplySettingsChanges(
                 try:
                     payload = json.loads(changes_json)
                 except Exception:
-                    logger.warn("SkyTools: Failed to parse changesJson payload")
+                    logger.warn("LuaTools: Failed to parse changesJson payload")
                     return json.dumps({"success": False, "error": "Invalid JSON payload"})
             elif isinstance(changes_json, dict):
                 payload = changes_json
@@ -320,27 +328,27 @@ def ApplySettingsChanges(
         if payload is None:
             payload = {}
         elif not isinstance(payload, dict):
-            logger.warn(f"SkyTools: Parsed payload is not a dict: {payload!r}")
+            logger.warn(f"LuaTools: Parsed payload is not a dict: {payload!r}")
             return json.dumps({"success": False, "error": "Invalid payload format"})
 
         try:
-            logger.log(f"SkyTools: ApplySettingsChanges received payload: {payload}")
+            logger.log(f"LuaTools: ApplySettingsChanges received payload: {payload}")
         except Exception:
             pass
 
         result = apply_settings_changes(payload)
         try:
-            logger.log(f"SkyTools: ApplySettingsChanges result: {result}")
+            logger.log(f"LuaTools: ApplySettingsChanges result: {result}")
         except Exception:
             pass
         response = json.dumps(result)
         try:
-            logger.log(f"SkyTools: ApplySettingsChanges response json: {response}")
+            logger.log(f"LuaTools: ApplySettingsChanges response json: {response}")
         except Exception:
             pass
         return response
     except Exception as exc:
-        logger.warn(f"SkyTools: ApplySettingsChanges failed: {exc}")
+        logger.warn(f"LuaTools: ApplySettingsChanges failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -349,7 +357,7 @@ def GetAvailableLocales(contentScriptQuery: str = "") -> str:
         locales = get_available_locales()
         return json.dumps({"success": True, "locales": locales})
     except Exception as exc:
-        logger.warn(f"SkyTools: GetAvailableLocales failed: {exc}")
+        logger.warn(f"LuaTools: GetAvailableLocales failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -361,7 +369,7 @@ def GetTranslations(contentScriptQuery: str = "", language: str = "", **kwargs: 
         bundle["success"] = True
         return json.dumps(bundle)
     except Exception as exc:
-        logger.warn(f"SkyTools: GetTranslations failed: {exc}")
+        logger.warn(f"LuaTools: GetTranslations failed: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
 
 
@@ -370,12 +378,12 @@ class Plugin:
         _copy_webkit_files()
 
     def _load(self):
-        logger.log(f"bootstrapping SkyTools plugin, millennium {Millennium.version()}")
+        logger.log(f"bootstrapping LuaTools plugin, millennium {Millennium.version()}")
 
         try:
             detect_steam_install_path()
         except Exception as exc:
-            logger.warn(f"SkyTools: steam path detection failed: {exc}")
+            logger.warn(f"LuaTools: steam path detection failed: {exc}")
 
         ensure_http_client("InitApis")
         ensure_temp_download_dir()
@@ -390,7 +398,7 @@ class Plugin:
         try:
             init_applist()
         except Exception as exc:
-            logger.warn(f"SkyTools: Applist initialization failed: {exc}")
+            logger.warn(f"LuaTools: Applist initialization failed: {exc}")
 
         _copy_webkit_files()
         _inject_webkit_files()

@@ -1,4 +1,4 @@
-"""Auto-update utilities for the SkyTools backend."""
+"""Auto-update utilities for the LuaTools backend."""
 
 from __future__ import annotations
 
@@ -55,8 +55,8 @@ def apply_pending_update_if_any() -> str:
 
         new_version = str(info.get("version", "")) if isinstance(info, dict) else ""
         if new_version:
-            return f"SkyTools updated to {new_version}. Please restart Steam."
-        return "SkyTools update applied. Please restart Steam."
+            return f"LuaTools updated to {new_version}. Please restart Steam."
+        return "LuaTools update applied. Please restart Steam."
     except Exception as exc:
         logger.warn(f"AutoUpdate: Failed to apply pending update: {exc}")
         return ""
@@ -81,7 +81,7 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
 
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "SkyTools-Updater",
+        "User-Agent": "LuaTools-Updater",
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -99,7 +99,7 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as api_err:
         logger.warn(f"AutoUpdate: GitHub API failed ({api_err}), trying proxy...")
         try:
-            proxy_url = "https://skytools.vercel.app/api/github-latest"
+            proxy_url = "https://luatools.vercel.app/api/github-latest"
             resp = client.get(proxy_url, follow_redirects=True, timeout=15)
             resp.raise_for_status()
             data = resp.json()
@@ -130,7 +130,7 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
     if not zip_url and tag_name:
-        zip_url = f"https://skytools.vercel.app/api/get-plugin/{tag_name}"
+        zip_url = f"https://luatools.vercel.app/api/get-plugin/{tag_name}"
         logger.log(f"AutoUpdate: Using proxy download URL: {zip_url}")
 
     if not zip_url:
@@ -212,7 +212,7 @@ def check_for_update_once() -> str:
         except Exception:
             pass
         logger.log("AutoUpdate: Update extracted; will take effect after restart")
-        return f"SkyTools updated to {latest_version}. Please restart Steam."
+        return f"LuaTools updated to {latest_version}. Please restart Steam."
     except Exception as extract_err:
         logger.warn(
             f"AutoUpdate: Extraction failed, will apply on next start: {extract_err}"
@@ -262,17 +262,17 @@ def _check_and_donate_keys() -> None:
         
         steam_path = detect_steam_install_path()
         if not steam_path:
-            logger.warn("SkyTools: Cannot donate keys - Steam path not found")
+            logger.warn("LuaTools: Cannot donate keys - Steam path not found")
             return
         
         pairs = extract_valid_decryption_keys(steam_path)
         if pairs:
             send_donation_keys(pairs)
         else:
-            logger.log("SkyTools: No valid keys found to donate")
+            logger.log("LuaTools: No valid keys found to donate")
             
     except Exception as exc:
-        logger.warn(f"SkyTools: Donate keys check failed: {exc}")
+        logger.warn(f"LuaTools: Donate keys check failed: {exc}")
 
 
 def _start_initial_check_worker():
@@ -307,15 +307,15 @@ def restart_steam_internal() -> bool:
     """Internal helper used to restart Steam via bundled script."""
     script_path = backend_path("restart_steam.cmd")
     if not os.path.exists(script_path):
-        logger.error(f"SkyTools: restart script not found: {script_path}")
+        logger.error(f"LuaTools: restart script not found: {script_path}")
         return False
     try:
         CREATE_NO_WINDOW = 0x08000000
         subprocess.Popen(["cmd", "/C", script_path], creationflags=CREATE_NO_WINDOW)
-        logger.log("SkyTools: Restart script launched (hidden)")
+        logger.log("LuaTools: Restart script launched (hidden)")
         return True
     except Exception as exc:
-        logger.error(f"SkyTools: Failed to launch restart script: {exc}")
+        logger.error(f"LuaTools: Failed to launch restart script: {exc}")
         return False
 
 
@@ -332,7 +332,7 @@ def check_for_updates_now() -> Dict[str, Any]:
             store_last_message(message)
         return {"success": True, "message": message}
     except Exception as exc:
-        logger.warn(f"SkyTools: CheckForUpdatesNow failed: {exc}")
+        logger.warn(f"LuaTools: CheckForUpdatesNow failed: {exc}")
         return {"success": False, "error": str(exc)}
 
 
