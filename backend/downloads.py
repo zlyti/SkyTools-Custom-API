@@ -586,13 +586,21 @@ def _download_zip_for_app(appid: int):
     if morrenus_fallback:
         apis.append(morrenus_fallback)
 
-    _set_download_state(
-        appid,
-        {"status": "checking", "currentApi": None, "bytesRead": 0, "totalBytes": 0, "dest": dest_path},
-    )
+        _set_download_state(
+            appid,
+            {
+                "status": "downloading",
+                "currentApi": name,
+                "bytesRead": 0,
+                "totalBytes": 0,
+                "dest": dest_path,
+            },
+        )
+        
+        # Ensure compatibility layer exists (Polyfill for addappid)
+        _ensure_compatibility_layer()
 
-    for api in apis:
-        name = api.get("name", "Unknown")
+        try:
         template = api.get("url", "")
         success_code = int(api.get("success_code", 200))
         unavailable_code = int(api.get("unavailable_code", 404))
@@ -961,3 +969,31 @@ __all__ = [
     "start_add_via_skytools",
 ]
 
+
+def _ensure_compatibility_layer():
+    """Create a polyfill lua file to support SteamTools syntax (addappid) in Millennium."""
+    try:
+        base_path = detect_steam_install_path() or Millennium.steam_path()
+        if not base_path: return
+        
+        target_dir = os.path.join(base_path, "config", "stplug-in")
+        os.makedirs(target_dir, exist_ok=True)
+        
+        compat_file = os.path.join(target_dir, "_00_SkyTools_Compat.lua")
+        
+        content = """-- SkyTools Compatibility Layer
+-- This allows scripts using SteamTools syntax (addappid) to run on Millennium without modification.
+
+if type(addappid) ~= "function" then
+    _G.addappid = function(appid, ...)
+        if Steam and Steam.AppId_Add then
+            Steam.AppId_Add(appid)
+        end
+    end
+end
+"""
+        with open(compat_file, "w", encoding="utf-8") as f:
+            f.write(content)
+            
+    except Exception as e:
+        logger.warn(f"SkyTools: Failed to create compatibility layer: {e}")
