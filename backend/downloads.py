@@ -455,13 +455,25 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             
         processed_text = "".join(processed_lines)
 
-        _set_download_state(appid, {"status": "installing"})
-        dest_file = os.path.join(target_dir, f"{appid}.lua")
         if _is_download_cancelled(appid):
             raise RuntimeError("cancelled")
+            
+        # Prepend Compatibility Layer (The "Clip" technique)
+        # We don't change the code, we just paste the definition at the top.
+        compat_header = """
+if type(addappid) ~= "function" then
+    _G.addappid = function(appid, ...)
+        if Steam and Steam.AppId_Add then
+            Steam.AppId_Add(appid)
+        end
+    end
+end
+"""
+        final_content = compat_header + "\n" + text
+        
         with open(dest_file, "w", encoding="utf-8") as output:
-            output.write(processed_text)
-        logger.log(f"SkyTools: Installed lua -> {dest_file}")
+            output.write(final_content)
+        logger.log(f"SkyTools: Installed lua -> {dest_file} (with compat header)")
         
         # Check for potential SteamTools interference
         try:
