@@ -57,6 +57,14 @@ def create_dist():
                     abs_path = os.path.join(root, file)
                     rel_path = os.path.join("public", os.path.relpath(abs_path, PUBLIC_SOURCE))
                     zipf.write(abs_path, rel_path)
+
+        # Add plugin.json (CRITICAL for detection)
+        PLUGIN_JSON = os.path.join(PROJECT_ROOT, "plugin.json")
+        if os.path.exists(PLUGIN_JSON):
+            print(f"Adding plugin.json from {PLUGIN_JSON}...")
+            zipf.write(PLUGIN_JSON, "plugin.json")
+        else:
+            print("WARNING: plugin.json not found!")
                 
     print(f"Created {zip_path}")
     
