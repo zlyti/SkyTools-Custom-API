@@ -46,6 +46,16 @@ def create_dist():
                 abs_path = os.path.join(root, file)
                 rel_path = os.path.relpath(abs_path, PLUGIN_SOURCE)
                 zipf.write(abs_path, rel_path)
+
+        # Add public folder
+        PUBLIC_SOURCE = os.path.join(PROJECT_ROOT, "public")
+        if os.path.exists(PUBLIC_SOURCE):
+            print(f"Zipping public files from {PUBLIC_SOURCE}...")
+            for root, dirs, files in os.walk(PUBLIC_SOURCE):
+                for file in files:
+                    abs_path = os.path.join(root, file)
+                    rel_path = os.path.join("public", os.path.relpath(abs_path, PUBLIC_SOURCE))
+                    zipf.write(abs_path, rel_path)
                 
     print(f"Created {zip_path}")
     
