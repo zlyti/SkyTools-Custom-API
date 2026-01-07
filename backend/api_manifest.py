@@ -10,6 +10,8 @@ from config import (
     API_JSON_FILE,
     API_MANIFEST_PROXY_URL,
     API_MANIFEST_URL,
+    API_METADATA_URL,
+    API_METADATA_FILE,
     HTTP_PROXY_TIMEOUT_SECONDS,
 )
 from http_client import ensure_http_client, get_http_client
@@ -21,6 +23,7 @@ from utils import (
     read_text,
     write_text,
 )
+from morrenus import morrenus
 
 _APIS_INIT_DONE = False
 _INIT_APIS_LAST_MESSAGE = ""
@@ -81,8 +84,52 @@ def init_apis(content_script_query: str = "") -> str:
 
     _APIS_INIT_DONE = True
     _INIT_APIS_LAST_MESSAGE = message
+    
+    # Also init metadata
+    try:
+        init_metadata()
+    except Exception:
+    except Exception:
+        pass
+
+    # Also sync Morrenus games (Master Plan 4.0)
+    try:
+        # Run sync in background or at least try it
+        logger.log("InitApis: Triggering Morrenus sync...")
+        count = morrenus.sync_games_list()
+        message += f" [Morrenus: {count} games indexed]"
+    except Exception as e:
+        logger.warn(f"InitApis: Morrenus sync failed: {e}")
+
     logger.log(f'InitApis: completed message="{message}"')
     return json.dumps({"success": True, "message": message})
+
+
+def init_metadata() -> None:
+    """Initialize the metadata file (tokens/keys) if not present."""
+    path = backend_path(API_METADATA_FILE)
+    if os.path.exists(path):
+        return
+    
+    client = ensure_http_client("InitMetadata")
+    try:
+        logger.log(f"SkyTools: Fetching metadata from {API_METADATA_URL}")
+        resp = client.get(API_METADATA_URL)
+        resp.raise_for_status()
+        write_text(path, resp.text)
+        logger.log("SkyTools: Successfully initialized metadata.json")
+    except Exception as e:
+        logger.warn(f"SkyTools: Failed to initialize metadata: {e}")
+
+
+def load_metadata() -> Dict[str, Any]:
+    """Load metadata (tokens and keys) from local file."""
+    path = backend_path(API_METADATA_FILE)
+    text = read_text(path)
+    try:
+        return json.loads(text or '{"tokens": {}, "keys": {}}')
+    except Exception:
+        return {"tokens": {}, "keys": {}}
 
 
 def get_init_apis_message(content_script_query: str = "") -> str:
