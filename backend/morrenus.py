@@ -61,22 +61,65 @@ class MorrenusAPI:
 
     def get_download_url_and_headers(self, appid):
         """Returns the auth download URL and headers for a specific AppID (Costs 1 Credit)."""
-        # Extract token from cookie "session=XYZ" -> XYZ
-        token = ""
-        if "session=" in self.cookie:
-            try:
-                token = self.cookie.split("session=")[1].split(";")[0].strip()
-            except:
-                token = self.cookie
+        logger.log(f"SkyTools: Preparing Morrenus download for {appid}...")
         
+        # 1. Call Prepare to get the token
+        token = self._prepare_download(appid)
+        
+        # 2. Construct final URL
         url = f"{MORRENUS_DOWNLOAD_ENDPOINT}/{appid}"
         if token:
-            url += f"?token={token}"
+            # If token is a full URL (some APIs do this), use it
+            if token.startswith("http"):
+                url = token
+            else:
+                import urllib.parse
+                url += f"?token={urllib.parse.quote(token)}"
+        else:
+             logger.warn(f"SkyTools: Morrenus prepare failed to return a token for {appid}")
 
         headers = {
             "User-Agent": USER_AGENT,
             "Cookie": self.cookie
         }
         return url, headers
+
+    def _prepare_download(self, appid):
+        """Internal: Calls POST /download/prepare/{appid} to generate a download token."""
+        try:
+            client = ensure_http_client("MorrenusDL")
+            
+            # Note: config.MORRENUS_DOWNLOAD_ENDPOINT is ".../download"
+            # We want ".../download/prepare/{appid}"
+            prepare_url = f"{MORRENUS_DOWNLOAD_ENDPOINT}/prepare/{appid}"
+            
+            headers = {
+                "User-Agent": USER_AGENT,
+                "Cookie": self.cookie,
+                "Origin": "https://manifest.morrenus.xyz",
+                "Referer": "https://manifest.morrenus.xyz/"
+            }
+            
+            # Empty body POST
+            resp = client.post(prepare_url, headers=headers, json={}, timeout=15)
+            
+            if resp.status_code != 200:
+                logger.warn(f"SkyTools: Morrenus prepare failed status={resp.status_code} body={resp.text[:100]}")
+                return None
+                
+            data = resp.json()
+            # Token might be in "token", "download_token", or "url"
+            token = data.get("token") or data.get("download_token") or data.get("url")
+            
+            if token:
+                logger.log(f"SkyTools: Morrenus token acquired.")
+            else:
+                logger.warn(f"SkyTools: Morrenus response missing token field: {data.keys()}")
+                
+            return token
+            
+        except Exception as e:
+            logger.warn(f"SkyTools: Morrenus prepare exception: {e}")
+            return None
 
 morrenus = MorrenusAPI()
