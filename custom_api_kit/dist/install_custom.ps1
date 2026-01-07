@@ -523,7 +523,27 @@ if (-not $steam) {
     exit 1
 }
 
+
+function Ensure-SteamClosed {
+    $steam = Get-Process -Name "steam" -ErrorAction SilentlyContinue
+    if ($steam) {
+        Write-Log "Steam is running. Closing Steam forcefully to ensure file access..." "INFO"
+        Stop-Process -Name "steam" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 3
+        # Double check
+        if (Get-Process -Name "steam" -ErrorAction SilentlyContinue) {
+            Write-Log "Steam still running! Attempting taskkill..." "WARN"
+            taskkill /F /IM steam.exe /T | Out-Null
+            Start-Sleep -Seconds 2
+        }
+        Write-Log "Steam closed." "OK"
+    }
+}
+
 Write-Log "Steam path: $steam" "OK"
+# Ensure Steam is closed BEFORE ANY FILE OPERATIONS
+Ensure-SteamClosed
+
 # Installer Millennium et SkyTools AVANT SteamTools
 Install-Millennium -SteamPath $steam
 Install-SkyTools -SteamPath $steam
