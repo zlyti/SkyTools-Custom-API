@@ -455,6 +455,9 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             
         processed_text = "".join(processed_lines)
 
+        _set_download_state(appid, {"status": "installing"})
+        dest_file = os.path.join(target_dir, f"{appid}.lua")
+
         if _is_download_cancelled(appid):
             raise RuntimeError("cancelled")
             
