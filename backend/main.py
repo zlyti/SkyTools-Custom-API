@@ -54,8 +54,12 @@ from settings.manager import (
     get_translation_map,
 )
 from steam_utils import detect_steam_install_path, get_game_install_path_response, open_game_folder
+from license import check_license_at_startup, is_license_valid, get_license_status, get_license_error
 
 logger = shared_logger
+
+# État global de la licence
+_license_checked = False
 
 
 def GetPluginDir() -> str:  # Legacy API used by the frontend
@@ -139,10 +143,14 @@ def RestartSteam(contentScriptQuery: str = "") -> str:
 
 
 def HasSkyToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
+    if not is_license_valid():
+        return json.dumps({"success": False, "error": "LICENSE_INVALID", "has": False})
     return has_skytools_for_app(appid)
 
 
 def StartAddViaSkyTools(appid: int, contentScriptQuery: str = "") -> str:
+    if not is_license_valid():
+        return json.dumps({"success": False, "error": "LICENSE_INVALID", "message": "Licence invalide. Achetez SkyTools sur https://skytools.store"})
     return start_add_via_skytools(appid)
 
 
@@ -171,10 +179,14 @@ def DeleteSkyToolsForApp(appid: int, contentScriptQuery: str = "") -> str:
 
 
 def CheckForFixes(appid: int, contentScriptQuery: str = "") -> str:
+    if not is_license_valid():
+        return json.dumps({"success": False, "error": "LICENSE_INVALID"})
     return check_for_fixes(appid)
 
 
 def ApplyGameFix(appid: int, downloadUrl: str, installPath: str, fixType: str = "", gameName: str = "", contentScriptQuery: str = "") -> str:
+    if not is_license_valid():
+        return json.dumps({"success": False, "error": "LICENSE_INVALID", "message": "Licence invalide."})
     return apply_game_fix(appid, downloadUrl, installPath, fixType, gameName)
 
 
@@ -353,6 +365,16 @@ def GetAvailableLocales(contentScriptQuery: str = "") -> str:
         return json.dumps({"success": False, "error": str(exc)})
 
 
+def GetLicenseStatus(contentScriptQuery: str = "") -> str:
+    """Retourne le statut de la licence pour le frontend."""
+    try:
+        status = get_license_status()
+        return json.dumps({"success": True, **status})
+    except Exception as exc:
+        logger.warn(f"SkyTools: GetLicenseStatus failed: {exc}")
+        return json.dumps({"success": False, "error": str(exc)})
+
+
 def GetTranslations(contentScriptQuery: str = "", language: str = "", **kwargs: Any) -> str:
     try:
         if not language and "language" in kwargs:
@@ -370,7 +392,20 @@ class Plugin:
         _copy_webkit_files()
 
     def _load(self):
+        global _license_checked
         logger.log(f"bootstrapping SkyTools plugin, millennium {Millennium.version()}")
+
+        # Vérifier la licence AVANT tout le reste
+        try:
+            license_ok = check_license_at_startup()
+            _license_checked = True
+            if not license_ok:
+                error = get_license_error()
+                logger.error(f"SkyTools: LICENSE INVALID - {error}")
+                logger.error("SkyTools: Plugin functionality disabled. Please purchase a valid license.")
+                # On continue quand même pour pouvoir afficher le message d'erreur dans l'UI
+        except Exception as exc:
+            logger.error(f"SkyTools: License check failed: {exc}")
 
         try:
             detect_steam_install_path()

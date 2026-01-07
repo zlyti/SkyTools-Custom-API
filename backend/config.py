@@ -14,7 +14,7 @@ DEFAULT_HEADERS = {
     "Sec-Fetch-Site": "cross-site",
 }
 
-API_MANIFEST_URL = "https://raw.githubusercontent.com/madoiscool/lt_api_links/refs/heads/main/load_free_manifest_apis"
+API_MANIFEST_URL = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/api.json"
 API_MANIFEST_PROXY_URL = "https://skytools.vercel.app/load_free_manifest_apis"
 API_JSON_FILE = "api.json"
 
@@ -24,6 +24,7 @@ UPDATE_PENDING_INFO = "update_pending.json"
 
 HTTP_TIMEOUT_SECONDS = 15
 HTTP_PROXY_TIMEOUT_SECONDS = 15
+UPDATE_DOWNLOAD_TIMEOUT_SECONDS = 120  # 2 minutes pour les téléchargements de mises à jour
 
 UPDATE_CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # 2 hours
 

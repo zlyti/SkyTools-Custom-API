@@ -2378,10 +2378,39 @@
             });
         }
         
-        // Look for the SteamDB buttons container
-        const steamdbContainer = document.querySelector('.steamdb-buttons') || 
+        // Look for the SteamDB buttons container with multiple fallback selectors
+        let steamdbContainer = document.querySelector('.steamdb-buttons') || 
                                 document.querySelector('[data-steamdb-buttons]') ||
                                 document.querySelector('.apphub_OtherSiteInfo');
+        
+        // Additional fallback selectors for Steam's current structure
+        if (!steamdbContainer) {
+            // Try to find common Steam page containers
+            steamdbContainer = document.querySelector('.apphub_OtherSiteInfo') ||
+                              document.querySelector('.apphub_AppName')?.parentElement?.querySelector('.apphub_OtherSiteInfo') ||
+                              document.querySelector('[class*="OtherSiteInfo"]') ||
+                              document.querySelector('[class*="steamdb"]') ||
+                              document.querySelector('.apphub_AppName')?.closest('.apphub_AppHub')?.querySelector('[class*="button"]')?.parentElement ||
+                              document.querySelector('.apphub_AppName')?.parentElement?.querySelector('div[class*="btn"]')?.parentElement;
+        }
+        
+        // If still not found, try to find any container with buttons that might work
+        if (!steamdbContainer) {
+            // Look for containers with multiple links/buttons (likely the right area)
+            const possibleContainers = document.querySelectorAll('div[class*="button"], div[class*="btn"], div[class*="link"]');
+            for (let container of possibleContainers) {
+                const links = container.querySelectorAll('a');
+                if (links.length >= 2) {
+                    // Check if it's in a reasonable location (not too nested, has some structure)
+                    const rect = container.getBoundingClientRect();
+                    if (rect.width > 100 && rect.height > 20) {
+                        steamdbContainer = container;
+                        backendLog('SkyTools: Found fallback container with multiple links');
+                        break;
+                    }
+                }
+            }
+        }
 
         if (steamdbContainer) {
             // Always update translations for existing buttons (even if not a page change)
@@ -2615,7 +2644,27 @@
                 }
             }
         } else {
-            if (!logState.missingOnce) { backendLog('SkyTools: steamdbContainer not found on this page'); logState.missingOnce = true; }
+            if (!logState.missingOnce) { 
+                backendLog('SkyTools: steamdbContainer not found on this page');
+                backendLog('SkyTools: Current URL: ' + window.location.href);
+                // Log what we tried to find
+                const triedSelectors = [
+                    '.steamdb-buttons',
+                    '[data-steamdb-buttons]',
+                    '.apphub_OtherSiteInfo',
+                    '[class*="OtherSiteInfo"]',
+                    '[class*="steamdb"]'
+                ];
+                const found = triedSelectors.map(sel => {
+                    const el = document.querySelector(sel);
+                    return sel + ': ' + (el ? 'FOUND' : 'NOT FOUND');
+                }).join(', ');
+                backendLog('SkyTools: Selector check results: ' + found);
+                // Try to find any buttons/links on the page for debugging
+                const allLinks = document.querySelectorAll('a[href]');
+                backendLog('SkyTools: Found ' + allLinks.length + ' links on page');
+                logState.missingOnce = true; 
+            }
         }
     }
     
@@ -2823,11 +2872,30 @@
     // Use MutationObserver to catch dynamically added content
     if (typeof MutationObserver !== 'undefined') {
         const observer = new MutationObserver(function(mutations) {
+            let shouldRetry = false;
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Check if any added node might be a container we're looking for
+                    for (let node of mutation.addedNodes) {
+                        if (node.nodeType === 1) { // Element node
+                            const el = node.nodeType === 1 ? node : null;
+                            if (el && (
+                                el.classList?.contains('steamdb-buttons') ||
+                                el.classList?.contains('apphub_OtherSiteInfo') ||
+                                el.querySelector?.('.steamdb-buttons') ||
+                                el.querySelector?.('.apphub_OtherSiteInfo') ||
+                                el.querySelector?.('[data-steamdb-buttons]')
+                            )) {
+                                shouldRetry = true;
+                                break;
+                            }
+                        }
+                    }
                     // Always update translations when DOM changes
                     updateButtonTranslations();
-                    addSkyToolsButton();
+                    if (shouldRetry || !document.querySelector('.skytools-button')) {
+                        addSkyToolsButton();
+                    }
                 }
             });
         });
@@ -2837,6 +2905,22 @@
             subtree: true
         });
     }
+    
+    // Periodic retry mechanism in case container appears later
+    let retryCount = 0;
+    const maxRetries = 20; // Try for up to 20 seconds
+    const retryInterval = setInterval(function() {
+        if (document.querySelector('.skytools-button')) {
+            clearInterval(retryInterval);
+            return;
+        }
+        retryCount++;
+        if (retryCount > maxRetries) {
+            clearInterval(retryInterval);
+            return;
+        }
+        addSkyToolsButton();
+    }, 1000);
 
     function showLoadedAppsPopup(apps) {
         // Avoid duplicates
