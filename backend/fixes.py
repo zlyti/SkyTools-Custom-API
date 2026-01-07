@@ -92,7 +92,7 @@ def check_for_fixes(appid: int) -> str:
 
     try:
         # Check Custom API for FreeTP fix
-        freetp_url = f"https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/{appid}_freetp.zip"
+        freetp_url = f"https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/games/{appid}_freetp.zip"
         # We use a short timeout since it's a raw github check
         resp = client.head(freetp_url, follow_redirects=True, timeout=5)
         # Github returns 200 for existing files
