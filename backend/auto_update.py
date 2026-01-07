@@ -201,7 +201,11 @@ def check_for_update_once() -> str:
             return ""
 
     if not latest_version or not zip_url:
-        logger.warn("AutoUpdate: Manifest missing version or zip_url")
+        is_custom_repo = (gh_cfg and gh_cfg.get("owner") != "madoiscool")
+        if is_custom_repo:
+            logger.log("AutoUpdate: No update manifest found for custom repo (normal).")
+        else:
+            logger.warn("AutoUpdate: Manifest missing version or zip_url")
         return ""
 
     current_version = get_plugin_version()
