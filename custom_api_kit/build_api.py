@@ -9,7 +9,7 @@ OUTPUT_FILE = "api.json"
 # SkyTools replaces <appid> with the actual game ID
 CUSTOM_REPO_ENTRY = {
     "name": "Alucard Custom Repo",
-    "url": "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/<appid>.zip",
+    "url": "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/games/<appid>.zip",
     "success_code": 200,
     "unavailable_code": 404,
     "enabled": True
