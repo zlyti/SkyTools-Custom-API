@@ -28,13 +28,13 @@ SETTINGS_GROUPS: List[SettingGroup] = [
     SettingGroup(
         key="general",
         label="General",
-        description="Global SkyTools preferences.",
+        description="Global LuaTools preferences.",
         options=[
             SettingOption(
                 key="language",
                 label="Language",
                 option_type="select",
-                description="Choose the language used by SkyTools.",
+                description="Choose the language used by LuaTools.",
                 default="en",
                 metadata={"dynamicChoices": "locales"},
             ),
@@ -42,7 +42,7 @@ SETTINGS_GROUPS: List[SettingGroup] = [
                 key="donateKeys",
                 label="Donate Keys",
                 option_type="toggle",
-                description="Allow SkyTools to donate spare Steam keys. (placeholder option)",
+                description="Allow LuaTools to donate spare Steam keys. (placeholder option)",
                 default=True,
                 metadata={"yesLabel": "Yes", "noLabel": "No"},
             ),

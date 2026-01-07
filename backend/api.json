@@ -1,47 +1,4 @@
-{
-    "api_list": [
-        {
-            "name": "Alucard Custom Repo",
-            "url": "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
-        {
-            "name": "ManifestHub Fix (tymolu233)",
-            "url": "https://github.com/tymolu233/ManifestAutoUpdate-fix/archive/refs/heads/<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
-        {
-            "name": "ManifestHub (SteamAutoCracks)",
-            "url": "https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
-        {
-            "name": "ManifestHub Mirror (ikun0014)",
-            "url": "https://github.com/ikun0014/ManifestHub/archive/refs/heads/<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
-        {
-            "name": "ManifestAutoUpdate (Auiowu)",
-            "url": "https://github.com/Auiowu/ManifestAutoUpdate/archive/refs/heads/<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
-        {
-            "name": "GitLab Fallback (SteamManifestArchive)",
-            "url": "https://gitlab.com/SteamManifestArchive/ManifestHub/-/archive/<appid>/ManifestHub-<appid>.zip",
-            "success_code": 200,
-            "unavailable_code": 404,
-            "enabled": true
-        },
+{"api_list": [
         {
             "name": "Sadie",
             "url": "http://167.235.229.108/m/<appid>",
@@ -70,5 +27,4 @@
             "unavailable_code": 404,
             "enabled": true
         }
-    ]
-}
+    ]}

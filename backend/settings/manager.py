@@ -49,7 +49,7 @@ def _ensure_language_valid(values: Dict[str, Any]) -> bool:
     current_language = general.get("language")
     if current_language not in available_codes:
         logger.warn(
-            f"SkyTools: language '{current_language}' not available; "
+            f"LuaTools: language '{current_language}' not available; "
             f"falling back to {DEFAULT_LOCALE} (available={sorted(available_codes)})"
         )
         general["language"] = DEFAULT_LOCALE
@@ -84,7 +84,7 @@ def _ensure_settings_dir() -> None:
     try:
         os.makedirs(directory, exist_ok=True)
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to ensure settings directory: {exc}")
+        logger.warn(f"LuaTools: Failed to ensure settings directory: {exc}")
 
 
 def _load_settings_file() -> Dict[str, Any]:
@@ -94,7 +94,7 @@ def _load_settings_file() -> Dict[str, Any]:
         with open(SETTINGS_FILE, "r", encoding="utf-8") as handle:
             return json.load(handle)
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to read settings file: {exc}")
+        logger.warn(f"LuaTools: Failed to read settings file: {exc}")
         return {}
 
 
@@ -104,7 +104,7 @@ def _write_settings_file(data: Dict[str, Any]) -> None:
         with open(SETTINGS_FILE, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=2)
     except Exception as exc:
-        logger.warn(f"SkyTools: Failed to persist settings file: {exc}")
+        logger.warn(f"LuaTools: Failed to persist settings file: {exc}")
 
 
 def _persist_values(values: Dict[str, Any]) -> None:
@@ -154,7 +154,7 @@ def _validate_option_value(option: SettingOption, value: Any) -> Tuple[bool, Any
             candidate = str(value or "").strip()
             try:
                 logger.log(
-                    "SkyTools: validating locale option "
+                    "LuaTools: validating locale option "
                     f"value={candidate!r}, allowed={sorted(set(allowed_map.values()))}"
                 )
             except Exception:
@@ -164,7 +164,7 @@ def _validate_option_value(option: SettingOption, value: Any) -> Tuple[bool, Any
                 return True, matched, None
             try:
                 logger.warn(
-                    f"SkyTools: invalid locale selection {value!r}; allowed codes "
+                    f"LuaTools: invalid locale selection {value!r}; allowed codes "
                     f"{sorted(set(allowed_map.values()))}"
                 )
             except Exception:
@@ -180,7 +180,7 @@ def _validate_option_value(option: SettingOption, value: Any) -> Tuple[bool, Any
                 return True, value, None
             try:
                 logger.warn(
-                    f"SkyTools: invalid select option value {value!r}; allowed {sorted(allowed)}"
+                    f"LuaTools: invalid select option value {value!r}; allowed {sorted(allowed)}"
                 )
             except Exception:
                 pass
@@ -299,7 +299,7 @@ def apply_settings_changes(changes: Dict[str, Any]) -> Dict[str, Any]:
                 errors.setdefault(group_key, {})["*"] = "Group payload must be an object"
                 continue
 
-            logger.log(f"SkyTools: applying group {group_key} with payload {options_changes}")
+            logger.log(f"LuaTools: applying group {group_key} with payload {options_changes}")
 
             if group_key not in updated:
                 errors.setdefault(group_key, {})["*"] = "Unknown settings group"
@@ -308,7 +308,7 @@ def apply_settings_changes(changes: Dict[str, Any]) -> Dict[str, Any]:
             for option_key, value in options_changes.items():
                 try:
                     logger.log(
-                        f"SkyTools: apply change request {group_key}.{option_key} -> {value!r}"
+                        f"LuaTools: apply change request {group_key}.{option_key} -> {value!r}"
                     )
                 except Exception:
                     pass
@@ -321,7 +321,7 @@ def apply_settings_changes(changes: Dict[str, Any]) -> Dict[str, Any]:
                 is_valid, normalised_value, error = _validate_option_value(option, value)
                 try:
                     logger.log(
-                        f"SkyTools: validated {group_key}.{option_key}, "
+                        f"LuaTools: validated {group_key}.{option_key}, "
                         f"is_valid={is_valid}, normalised={normalised_value!r}, error={error}"
                     )
                 except Exception:
@@ -350,7 +350,7 @@ def apply_settings_changes(changes: Dict[str, Any]) -> Dict[str, Any]:
             language = str(values_snapshot.get("general", {}).get("language") or DEFAULT_LOCALE)
             translations = get_locale_manager().get_locale_strings(language)
             logger.log(
-                f"SkyTools: no changes applied; returning cached values with language={language}"
+                f"LuaTools: no changes applied; returning cached values with language={language}"
             )
             return {
                 "success": True,
@@ -373,12 +373,12 @@ def apply_settings_changes(changes: Dict[str, Any]) -> Dict[str, Any]:
                 try:
                     callback(previous, current_value)
                 except Exception as exc:
-                    logger.warn(f"SkyTools: settings hook failed for {option_key}: {exc}")
+                    logger.warn(f"LuaTools: settings hook failed for {option_key}: {exc}")
 
         translations = get_locale_manager().get_locale_strings(language)
 
         logger.log(
-            f"SkyTools: apply_settings_changes final language={language}, values={values_snapshot}"
+            f"LuaTools: apply_settings_changes final language={language}, values={values_snapshot}"
         )
         return {
             "success": True,
