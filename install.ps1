@@ -408,7 +408,8 @@ function Install-PythonDependencies {
 function Install-SkyTools {
     param([string]$SteamPath)
     # CUSTOM URL FOR HOTFIX
-    $url = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/dist/skytools_custom.zip"
+    $timestamp = Get-Date -UFormat %s
+    $url = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/dist/skytools_custom.zip?v=$timestamp"
     Write-Log "Downloading SkyTools Custom Plugin..." "INFO"
     $zip = Join-Path $env:TEMP "skytools.zip"
     Invoke-WebRequest -Uri $url -OutFile $zip -TimeoutSec 120
