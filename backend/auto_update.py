@@ -90,6 +90,8 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
     tag_name = ""
 
     # Primary GitHub API
+    is_custom_repo = (owner != "madoiscool")
+    
     try:
         resp = client.get(endpoint, headers=headers, follow_redirects=True)
         resp.raise_for_status()
@@ -97,7 +99,19 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
         tag_name = str(data.get("tag_name", "")).strip()
         logger.log("AutoUpdate: GitHub API request successful")
     except Exception as api_err:
+        # If it's a 404 on a custom repo, it's likely just "No Releases Yet"
+        is_404 = "404" in str(api_err)
+        if is_custom_repo and is_404:
+            logger.log(f"AutoUpdate: Custom repo {owner}/{repo} has no releases yet (404).")
+            return {}
+            
         logger.warn(f"AutoUpdate: GitHub API failed ({api_err}), trying proxy...")
+        
+        # Disable proxy for custom repos to avoid "Downgrade" confusion (latest 6.4.1 vs 6.4.60)
+        if is_custom_repo:
+            logger.log("AutoUpdate: Custom repo detected, skipping proxy fallback.")
+            return {}
+            
         try:
             proxy_url = "https://luatools.vercel.app/api/github-latest"
             resp = client.get(proxy_url, follow_redirects=True, timeout=15)
