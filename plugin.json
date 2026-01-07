@@ -3,7 +3,7 @@
   "name": "skytools",
   "common_name": "SkyTools",
   "description": "LuaTools Steam Plugin - Ported to SkyTools",
-  "version": "6.4.59",
+  "version": "6.4.60",
   "include": [
     "public"
   ]

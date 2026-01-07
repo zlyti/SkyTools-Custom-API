@@ -161,58 +161,70 @@ def _download_and_extract_fix(appid: int, download_url: str, install_path: str, 
             all_names = archive.namelist()
             appid_folder = f"{appid}/"
 
+            # A more robust detection of a single root folder
+            # 1. Gather all top-level entries, ignoring metadata/junk
             top_level_entries = set()
             for name in all_names:
-                parts = [p for p in name.split("/") if p]
+                clean_name = name.replace("\\", "/") # Normalize separators
+                parts = [p for p in clean_name.split("/") if p]
                 if parts:
+                    # Ignore common metadata/junk folders
+                    if parts[0] in ("__MACOSX", ".DS_Store", "Thumbs.db") or parts[0].startswith("._"):
+                        continue
                     top_level_entries.add(parts[0])
             
             if _get_fix_download_state(appid).get("status") == "cancelled":
                 logger.log(f"LuaTools: Fix extraction cancelled before start for {appid}")
                 raise RuntimeError("cancelled")
 
-            # SMART FLATTENING: If there is exactly one top-level entry and it is a folder
-            # We extract its contents to the root of install_path
+            # 2. If exactly one relevant top-level entry exists, it's our root
             root_folder = None
             if len(top_level_entries) == 1:
                 potential_root = list(top_level_entries)[0]
-                # Check if it's actually a directory in the zip
-                if any(name.startswith(f"{potential_root}/") for name in all_names):
-                    root_folder = f"{potential_root}/"
+                # The root folder in namelist could be "Folder/" or we just use it as a prefix
+                root_folder = potential_root
+                logger.log(f"LuaTools: Detected potential root folder '{root_folder}' in zip")
 
+            # 3. Perform extraction
             if root_folder:
-                logger.log(f"LuaTools: Found single root folder '{root_folder}' in zip, flattening extraction...")
+                logger.log(f"LuaTools: Flattening extraction from root folder '{root_folder}'")
+                prefix = root_folder + "/"
                 for member in archive.namelist():
-                    if member.startswith(root_folder) and member != root_folder:
-                        target_path = member[len(root_folder):]
-                        if not target_path:
-                            continue
+                    clean_member = member.replace("\\", "/")
+                    
+                    # If it's inside the root folder
+                    if clean_member.startswith(prefix):
+                        target_path = clean_member[len(prefix):]
+                        if not target_path: continue # Skip the root folder itself
                         
                         target = os.path.join(install_path, target_path)
-                        if member.endswith("/"):
+                        if clean_member.endswith("/"):
                             os.makedirs(target, exist_ok=True)
                             continue
-                            
+                        
                         os.makedirs(os.path.dirname(target), exist_ok=True)
                         with archive.open(member) as source, open(target, "wb") as output:
                             output.write(source.read())
                         extracted_files.append(target_path.replace("\\", "/"))
-                        
-                        if _get_fix_download_state(appid).get("status") == "cancelled":
-                            logger.log(f"LuaTools: Fix extraction cancelled mid-process for {appid}")
-                            raise RuntimeError("cancelled")
+                    # If it's the root folder itself (as a file/folder entry) or junk, ignore or extract normally
+                    elif clean_member == root_folder or clean_member == prefix.rstrip("/"):
+                        continue
+                    else:
+                        # Files OUTSIDE the root folder (if any meta was escaped)
+                        if any(junk in clean_member for junk in ("__MACOSX", ".DS_Store")):
+                            continue
+                        # If for some reason we have files outside, just extract them to install_path
+                        archive.extract(member, install_path)
+                        extracted_files.append(member.replace("\\", "/"))
             else:
                 logger.log(f"LuaTools: Extracting all zip contents normally to {install_path}")
                 for member in archive.namelist():
-                    if member.endswith("/"):
+                    if member.replace("\\", "/").endswith("/"):
                         target_dir = os.path.join(install_path, member)
                         os.makedirs(target_dir, exist_ok=True)
                         continue
                     archive.extract(member, install_path)
                     extracted_files.append(member.replace("\\", "/"))
-                    if _get_fix_download_state(appid).get("status") == "cancelled":
-                        logger.log(f"LuaTools: Fix extraction cancelled mid-process for {appid}")
-                        raise RuntimeError("cancelled")
 
         if _get_fix_download_state(appid).get("status") == "cancelled":
             logger.log(f"LuaTools: Fix cancelled after extraction for {appid}")
