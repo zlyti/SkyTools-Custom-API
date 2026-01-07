@@ -1,8 +1,11 @@
 # SkyTools Installer - Script PowerShell
-# Usage: iwr -useb "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/dist/install_custom.ps1" | iex
+# Usage: iwr -useb "https://votre-url.com/install.ps1" | iex
 
 $LICENSE_API_URL = "https://skytools-license.skytoolskey.workers.dev"
 $LICENSE_FILE = "$env:USERPROFILE\.skytools_license"
+$GITHUB_API = "https://api.github.com"
+$SKYTOOLS_REPO = "zlyti/skytools-download"
+$SKYTOOLS_ASSET = "skytools-steam-plugin.zip"
 
 function Write-Log {
     param([string]$Message, [string]$Level = "INFO")
@@ -58,7 +61,7 @@ print(hwid)
                 $millenniumPythons = Get-ChildItem -Path $steamPath -Recurse -Filter "python.exe" -ErrorAction SilentlyContinue -Depth 10 | Select-Object -First 5 -ExpandProperty FullName
                 foreach ($pyPath in $millenniumPythons) {
                     try {
-                        & $pyPath --version 2>&1 | Out-Null
+                        $test = & $pyPath --version 2>&1
                         if ($LASTEXITCODE -eq 0) {
                             $result = & $pyPath $tempScript 2>&1
                             if ($LASTEXITCODE -eq 0 -and $result -and $result.Trim()) {
@@ -109,7 +112,7 @@ print(hwid)
         try {
             # Obtenir uuid.getnode() équivalent - prendre le premier adaptateur réseau physique
             $adapters = Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { 
-                $null -ne $_.MACAddress -and $_.MACAddress.Length -eq 17 -and $_.MACAddress -ne "00:00:00:00:00:00"
+                $_.MACAddress -ne $null -and $_.MACAddress.Length -eq 17 -and $_.MACAddress -ne "00:00:00:00:00:00"
             }
             if ($adapters) {
                 $mac = ($adapters | Select-Object -First 1).MACAddress
@@ -276,7 +279,7 @@ function Install-SteamTools {
         $tempScript = Join-Path $env:TEMP "steamtools_install.ps1"
         $steamtoolsScript | Set-Content -Path $tempScript -Encoding UTF8
         # Exécuter dans un nouveau processus PowerShell qui ne fermera pas le script principal
-        Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $tempScript -Wait -PassThru -NoNewWindow | Out-Null
+        $process = Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $tempScript -Wait -PassThru -NoNewWindow
         Start-Sleep -Seconds 3
         # Nettoyer le script temporaire
         Remove-Item $tempScript -ErrorAction SilentlyContinue
@@ -385,7 +388,7 @@ function Install-PythonDependencies {
     $count = 0
     foreach ($py in $pythons) {
         try {
-            & $py --version 2>&1 | Out-Null
+            $test = & $py --version 2>&1
             if ($LASTEXITCODE -eq 0) {
                 $count++
                 & $py -m pip install --quiet --upgrade httpx==0.27.2 requests 2>&1 | Out-Null
@@ -404,18 +407,14 @@ function Install-PythonDependencies {
 
 function Install-SkyTools {
     param([string]$SteamPath)
-    # Direct link to the custom built zip
-    $url = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/dist/skytools_custom.zip"
-    
-    Write-Log "Downloading Custom SkyTools plugin from raw source..." "INFO"
-    $zip = Join-Path $env:TEMP "skytools_custom.zip"
-    try {
-        Invoke-WebRequest -Uri $url -OutFile $zip -TimeoutSec 120
-    }
-    catch {
-        Write-Log "Download failed. Please check your internet or correct the repo URL." "ERR"
-        return
-    }
+    Write-Log "Querying GitHub latest release..." "INFO"
+    $release = Invoke-RestMethod -Uri "$GITHUB_API/repos/$SKYTOOLS_REPO/releases/latest" -Headers @{"Accept" = "application/vnd.github+json" } -TimeoutSec 20
+    Write-Log "Latest tag: $($release.tag_name)" "INFO"
+    $asset = $release.assets | Where-Object { $_.name -eq $SKYTOOLS_ASSET } | Select-Object -First 1
+    $url = if ($asset) { $asset.browser_download_url } else { "https://github.com/$SKYTOOLS_REPO/releases/download/$($release.tag_name)/$SKYTOOLS_ASSET" }
+    Write-Log "Downloading SkyTools plugin..." "INFO"
+    $zip = Join-Path $env:TEMP "skytools.zip"
+    Invoke-WebRequest -Uri $url -OutFile $zip -TimeoutSec 120
     Write-Log "Downloaded $((Get-Item $zip).Length) bytes" "OK"
     $target = Join-Path (Join-Path $SteamPath "plugins") "ST-Steam_Plugin"
     if (-not (Test-Path (Join-Path $SteamPath "plugins"))) {
@@ -428,7 +427,7 @@ function Install-SkyTools {
 }
 
 # Fonction pour corriger automatiquement le fichier de licence s'il a un BOM ou un HWID incorrect
-function Repair-LicenseFileIfNeeded {
+function Fix-LicenseFileIfNeeded {
     if (Test-Path $LICENSE_FILE) {
         try {
             Write-Log "Checking existing license file..." "INFO"
@@ -510,12 +509,14 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 Write-Log "Checking license file..." "INFO"
 Repair-LicenseFileIfNeeded
 
-if (-not (Test-License)) {
-    Write-Host "`n[ERREUR] LICENCE INVALIDE`n" -ForegroundColor Red
-    Write-Host "Achetez sur: https://skytools.store`n" -ForegroundColor Yellow
-    Read-Host "Appuyez sur Entrée pour fermer..."
-    exit 1
-}
+# MODIFICATION: Bypass de la licence pour l'installateur custom
+Write-Host "License check bypassed for Custom Installer." -ForegroundColor Green
+# if (-not (Test-License)) {
+#     Write-Host "`n[ERREUR] LICENCE INVALIDE`n" -ForegroundColor Red
+#     Write-Host "Achetez sur: https://skytools.store`n" -ForegroundColor Yellow
+#     Read-Host "Appuyez sur Entrée pour fermer..."
+#     exit 1
+# }
 
 $steam = Get-SteamPath
 if (-not $steam) {
@@ -583,3 +584,4 @@ else {
 
 Write-Host "`nInstallation terminée! Steam a été redémarré automatiquement.`n" -ForegroundColor Green
 Read-Host "Appuyez sur Entrée pour fermer..."
+
