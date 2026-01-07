@@ -1,0 +1,18 @@
+[
+    {
+        "id": 1631270,
+        "name": "StarRupture",
+        "url": "https://github.com/zlyti/SkyTools-Custom-API/releases/download/v1.0/1631270.zip",
+        "success_code": 302,
+        "unavailable_code": 404,
+        "enabled": true
+    },
+    {
+        "id": 3684710,
+        "name": "My Sexy Neighbor 2",
+        "url": "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/3684710.zip",
+        "success_code": 200,
+        "unavailable_code": 404,
+        "enabled": true
+    }
+]

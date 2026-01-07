@@ -4,3 +4,5 @@ __pycache__/
 *.spec
 *.pyc
 key_generator.py
+
+custom_api_kit/games/1631270.zip

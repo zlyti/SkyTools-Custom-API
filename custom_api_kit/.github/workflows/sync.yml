@@ -1,0 +1,34 @@
+name: Update SkyTools API
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run every day at midnight
+  push:
+    branches: [ "main" ] # Run when you change files
+  workflow_dispatch:      # Allow manual run button
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Builder Script
+        run: python build_api.py
+
+      - name: Commit and Push if Changed
+        run: |
+          git config --global user.name 'SkyTools Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add api.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update api.json" && git push)

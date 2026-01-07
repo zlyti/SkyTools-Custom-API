@@ -1,0 +1,60 @@
+{
+    "api_list": [
+        {
+            "name": "Alucard Custom Repo",
+            "url": "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/games/<appid>.zip",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "ManifestHub (SteamAutoCracks)",
+            "url": "https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/<appid>.zip",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "ManifestHub Mirror (ikun0014)",
+            "url": "https://github.com/ikun0014/ManifestHub/archive/refs/heads/<appid>.zip",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "ManifestAutoUpdate (Auiowu)",
+            "url": "https://github.com/Auiowu/ManifestAutoUpdate/archive/refs/heads/<appid>.zip",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "Sadie",
+            "url": "http://167.235.229.108/m/<appid>",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "Ryuu",
+            "url": "http://167.235.229.108/<appid>",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "TwentyTwo Cloud",
+            "url": "http://masss.pythonanywhere.com/storage?auth=IEOIJE54esfsipoE56GE4&appid=<appid>",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        },
+        {
+            "name": "Sushi",
+            "url": "https://raw.githubusercontent.com/sushi-dev55-alt/sushitools-games-repo-alt/refs/heads/main/<appid>.zip",
+            "success_code": 200,
+            "unavailable_code": 404,
+            "enabled": true
+        }
+    ]
+}
