@@ -427,7 +427,8 @@ function Install-SkyTools {
 }
 
 # Fonction pour corriger automatiquement le fichier de licence s'il a un BOM ou un HWID incorrect
-function Fix-LicenseFileIfNeeded {
+# Fonction pour corriger automatiquement le fichier de licence s'il a un BOM ou un HWID incorrect
+function Repair-LicenseFileIfNeeded {
     if (Test-Path $LICENSE_FILE) {
         try {
             Write-Log "Checking existing license file..." "INFO"
