@@ -61,7 +61,18 @@ class MorrenusAPI:
 
     def get_download_url_and_headers(self, appid):
         """Returns the auth download URL and headers for a specific AppID (Costs 1 Credit)."""
+        # Extract token from cookie "session=XYZ" -> XYZ
+        token = ""
+        if "session=" in self.cookie:
+            try:
+                token = self.cookie.split("session=")[1].split(";")[0].strip()
+            except:
+                token = self.cookie
+        
         url = f"{MORRENUS_DOWNLOAD_ENDPOINT}/{appid}"
+        if token:
+            url += f"?token={token}"
+
         headers = {
             "User-Agent": USER_AGENT,
             "Cookie": self.cookie
