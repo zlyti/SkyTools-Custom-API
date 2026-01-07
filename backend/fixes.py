@@ -163,35 +163,50 @@ def _download_and_extract_fix(appid: int, download_url: str, install_path: str, 
 
             top_level_entries = set()
             for name in all_names:
-                parts = name.split("/")
-                if parts[0]:
+                parts = [p for p in name.split("/") if p]
+                if parts:
                     top_level_entries.add(parts[0])
+            
             if _get_fix_download_state(appid).get("status") == "cancelled":
                 logger.log(f"LuaTools: Fix extraction cancelled before start for {appid}")
                 raise RuntimeError("cancelled")
 
-            if len(top_level_entries) == 1 and appid_folder.rstrip("/") in top_level_entries:
-                logger.log(f"LuaTools: Found single folder {appid} in zip, extracting its contents")
+            # SMART FLATTENING: If there is exactly one top-level entry and it is a folder
+            # We extract its contents to the root of install_path
+            root_folder = None
+            if len(top_level_entries) == 1:
+                potential_root = list(top_level_entries)[0]
+                # Check if it's actually a directory in the zip
+                if any(name.startswith(f"{potential_root}/") for name in all_names):
+                    root_folder = f"{potential_root}/"
+
+            if root_folder:
+                logger.log(f"LuaTools: Found single root folder '{root_folder}' in zip, flattening extraction...")
                 for member in archive.namelist():
-                    if member.startswith(appid_folder) and member != appid_folder:
-                        target_path = member[len(appid_folder):]
+                    if member.startswith(root_folder) and member != root_folder:
+                        target_path = member[len(root_folder):]
                         if not target_path:
                             continue
-                        source = archive.open(member)
+                        
                         target = os.path.join(install_path, target_path)
+                        if member.endswith("/"):
+                            os.makedirs(target, exist_ok=True)
+                            continue
+                            
                         os.makedirs(os.path.dirname(target), exist_ok=True)
-                        if not member.endswith("/"):
-                            with open(target, "wb") as output:
-                                output.write(source.read())
-                            extracted_files.append(target_path.replace("\\", "/"))
-                        source.close()
+                        with archive.open(member) as source, open(target, "wb") as output:
+                            output.write(source.read())
+                        extracted_files.append(target_path.replace("\\", "/"))
+                        
                         if _get_fix_download_state(appid).get("status") == "cancelled":
                             logger.log(f"LuaTools: Fix extraction cancelled mid-process for {appid}")
                             raise RuntimeError("cancelled")
             else:
-                logger.log(f"LuaTools: Extracting all zip contents to {install_path}")
+                logger.log(f"LuaTools: Extracting all zip contents normally to {install_path}")
                 for member in archive.namelist():
                     if member.endswith("/"):
+                        target_dir = os.path.join(install_path, member)
+                        os.makedirs(target_dir, exist_ok=True)
                         continue
                     archive.extract(member, install_path)
                     extracted_files.append(member.replace("\\", "/"))
