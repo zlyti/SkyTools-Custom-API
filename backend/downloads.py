@@ -461,22 +461,10 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         if _is_download_cancelled(appid):
             raise RuntimeError("cancelled")
             
-        # Prepend Compatibility Layer (The "Clip" technique)
-        # We don't change the code, we just paste the definition at the top.
-        compat_header = """
-if type(addappid) ~= "function" then
-    _G.addappid = function(appid, ...)
-        if Steam and Steam.AppId_Add then
-            Steam.AppId_Add(appid)
-        end
-    end
-end
-"""
-        final_content = compat_header + "\n" + text
-        
         with open(dest_file, "w", encoding="utf-8") as output:
-            output.write(final_content)
-        logger.log(f"SkyTools: Installed lua -> {dest_file} (with compat header)")
+            output.write(processed_text)
+        logger.log(f"SkyTools: Installed lua -> {dest_file}")
+
         
         # Check for potential SteamTools interference
         try:
@@ -605,9 +593,6 @@ def _download_zip_for_app(appid: int):
         appid,
         {"status": "checking", "currentApi": None, "bytesRead": 0, "totalBytes": 0, "dest": dest_path},
     )
-
-    # Ensure compatibility layer exists (Polyfill for addappid)
-    _ensure_compatibility_layer()
 
     for api in apis:
         name = api.get("name", "Unknown")
