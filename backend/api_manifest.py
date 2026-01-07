@@ -1,4 +1,3 @@
-"""Management of the SkyTools API manifest (free API list)."""
 
 from __future__ import annotations
 
@@ -42,55 +41,50 @@ def init_apis(content_script_query: str = "") -> str:
     message = ""
 
     manifest_text = ""
+    # Try primary URL first
     try:
-        # Try primary URL first
+        logger.log(f"InitApis: Fetching latest manifest from {API_MANIFEST_URL}")
+        resp = client.get(API_MANIFEST_URL)
+        resp.raise_for_status()
+        manifest_text = resp.text
+        logger.log(
+            f"InitApis: Fetched manifest, status={resp.status_code}, length={len(manifest_text)}"
+        )
+    except Exception as primary_err:
+        logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
         try:
-            logger.log(f"InitApis: Fetching latest manifest from {API_MANIFEST_URL}")
-            resp = client.get(API_MANIFEST_URL)
+            logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
+            resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
             resp.raise_for_status()
             manifest_text = resp.text
             logger.log(
-                f"InitApis: Fetched manifest, status={resp.status_code}, length={len(manifest_text)}"
+                f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
             )
-        except Exception as primary_err:
-            logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
-            try:
-                logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
-                resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
-                resp.raise_for_status()
-                manifest_text = resp.text
-                logger.log(
-                    f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
-                )
-            except Exception as proxy_err:
-                logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
-                raise primary_err
-        except Exception as fetch_err:
-            logger.warn(f"InitApis: Failed to fetch free API manifest: {fetch_err}")
+        except Exception as proxy_err:
+            logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
+            # Non-fatal: manifest_text remains empty
 
-        normalized = normalize_manifest_text(manifest_text) if manifest_text else ""
-        if normalized:
-            write_text(api_json_path, normalized)
-            count = count_apis(normalized)
-            message = f"No API's Configured, Loaded {count} Free Ones :D"
-            logger.log(f"InitApis: Wrote new api.json with {count} entries")
-        else:
-            message = "No API's Configured and failed to load free ones"
-            logger.warn("InitApis: Manifest empty, nothing written")
+    normalized = normalize_manifest_text(manifest_text) if manifest_text else ""
+    if normalized:
+        write_text(api_json_path, normalized)
+        count = count_apis(normalized)
+        message = f"No API's Configured, Loaded {count} Free Ones :D"
+        logger.log(f"InitApis: Wrote new api.json with {count} entries")
+    else:
+        message = "No API's Configured and failed to load free ones"
+        logger.warn("InitApis: Manifest empty, nothing written")
 
     _APIS_INIT_DONE = True
     _INIT_APIS_LAST_MESSAGE = message
     
-    # Also init metadata
     # Also init metadata
     try:
         init_metadata()
     except Exception:
         pass
 
-    # Also sync Morrenus games (Master Plan 4.0)
+    # Also sync Morrenus games
     try:
-        # Run sync in background or at least try it
         logger.log("InitApis: Triggering Morrenus sync...")
         count = morrenus.sync_games_list()
         message += f" [Morrenus: {count} games indexed]"
@@ -211,4 +205,3 @@ def load_api_manifest() -> List[Dict[str, Any]]:
     except Exception as exc:
         logger.error(f"SkyTools: Failed to parse api.json: {exc}")
         return []
-
