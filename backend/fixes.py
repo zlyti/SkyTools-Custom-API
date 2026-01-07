@@ -93,8 +93,15 @@ def check_for_fixes(appid: int) -> str:
     try:
         # Check Custom API for FreeTP fix
         freetp_url = f"https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/games/{appid}_freetp.zip"
-        # We use a short timeout since it's a raw github check
-        resp = client.head(freetp_url, follow_redirects=True, timeout=5)
+        
+        logger.info(f"Checking FreeTP URL: {freetp_url}") 
+        # We use a short timeout since it's a raw github check. disable verify for robustness against local cert issues
+        resp = client.head(freetp_url, follow_redirects=True, timeout=5) # removed verify=False as it might not be supported by wrapper, relying on default
+        # Actually client is ensure_http_client returns a httpx.Client or wrapper? 
+        # http_client.py says check_http_client returns client.
+        
+        logger.info(f"FreeTP Status: {resp.status_code}")
+        
         # Github returns 200 for existing files
         result["freeTp"] = {"status": resp.status_code, "available": resp.status_code == 200}
         if resp.status_code == 200:
