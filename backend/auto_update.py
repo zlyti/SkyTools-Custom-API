@@ -14,7 +14,6 @@ from api_manifest import store_last_message
 from config import (
     UPDATE_CHECK_INTERVAL_SECONDS,
     UPDATE_CONFIG_FILE,
-    UPDATE_DOWNLOAD_TIMEOUT_SECONDS,
     UPDATE_PENDING_INFO,
     UPDATE_PENDING_ZIP,
 )
@@ -98,17 +97,9 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
         tag_name = str(data.get("tag_name", "")).strip()
         logger.log("AutoUpdate: GitHub API request successful")
     except Exception as api_err:
-        error_str = str(api_err)
-        # Messages plus informatifs selon le type d'erreur
-        if "403" in error_str or "rate limit" in error_str.lower():
-            logger.log("AutoUpdate: GitHub API rate limit reached (normal), using proxy...")
-        elif "404" in error_str:
-            logger.warn(f"AutoUpdate: GitHub API returned 404, trying proxy...")
-        else:
-            logger.warn(f"AutoUpdate: GitHub API failed ({api_err}), trying proxy...")
-        
+        logger.warn(f"AutoUpdate: GitHub API failed ({api_err}), trying proxy...")
         try:
-            proxy_url = "https://luatools.vercel.app/api/github-latest"
+            proxy_url = "https://skytools.vercel.app/api/github-latest"
             resp = client.get(proxy_url, follow_redirects=True, timeout=15)
             resp.raise_for_status()
             data = resp.json()
@@ -139,7 +130,7 @@ def _fetch_github_latest(cfg: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
     if not zip_url and tag_name:
-        zip_url = f"https://luatools.vercel.app/api/get-plugin/{tag_name}"
+        zip_url = f"https://skytools.vercel.app/api/get-plugin/{tag_name}"
         logger.log(f"AutoUpdate: Using proxy download URL: {zip_url}")
 
     if not zip_url:
@@ -153,42 +144,15 @@ def _download_and_extract_update(zip_url: str, pending_zip: str) -> bool:
     client = ensure_http_client("AutoUpdate: download")
     try:
         logger.log(f"AutoUpdate: Downloading {zip_url} -> {pending_zip}")
-        # Timeout plus long pour les gros fichiers
-        download_timeout = UPDATE_DOWNLOAD_TIMEOUT_SECONDS
-        with client.stream("GET", zip_url, follow_redirects=True, timeout=download_timeout) as response:
+        with client.stream("GET", zip_url, follow_redirects=True) as response:
             response.raise_for_status()
-            total_size = 0
-            chunk_count = 0
             with open(pending_zip, "wb") as output:
-                for chunk in response.iter_bytes(chunk_size=8192):
+                for chunk in response.iter_bytes():
                     if chunk:
                         output.write(chunk)
-                        total_size += len(chunk)
-                        chunk_count += 1
-                        # Logger la progression tous les 100 chunks (~800KB)
-                        if chunk_count % 100 == 0:
-                            size_mb = total_size / 1024 / 1024
-                            logger.log(f"AutoUpdate: Downloaded {size_mb:.2f} MB...")
-        logger.log(f"AutoUpdate: Download complete ({total_size / 1024 / 1024:.2f} MB)")
         return True
     except Exception as exc:
-        error_msg = str(exc)
-        # Messages d'erreur plus informatifs
-        if "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
-            logger.warn(f"AutoUpdate: Download timeout (le fichier est peut-etre trop gros ou la connexion est lente)")
-            logger.warn(f"AutoUpdate: La mise a jour sera reessayee lors du prochain check (dans 2 heures)")
-        elif "connection" in error_msg.lower() or "connect" in error_msg.lower():
-            logger.warn(f"AutoUpdate: Erreur de connexion lors du telechargement")
-            logger.warn(f"AutoUpdate: Verifiez votre connexion internet")
-        else:
-            logger.warn(f"AutoUpdate: Failed to download update: {exc}")
-        
-        # Nettoyer le fichier partiel en cas d'erreur
-        try:
-            if os.path.exists(pending_zip):
-                os.remove(pending_zip)
-        except Exception:
-            pass
+        logger.warn(f"AutoUpdate: Failed to download update: {exc}")
         return False
 
 

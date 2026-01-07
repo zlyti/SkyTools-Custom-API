@@ -12,9 +12,7 @@ from typing import Dict
 
 import Millennium  # type: ignore
 
-from api_manifest import load_api_manifest, load_metadata
-from cache import cache
-from morrenus import morrenus
+from api_manifest import load_api_manifest
 from config import (
     APPID_LOG_FILE,
     LOADED_APPS_FILE,
@@ -414,78 +412,20 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         except Exception:
             text = data.decode("utf-8", errors="replace")
 
-        # Metadata Injection (Master Plan 2.0)
-        metadata = load_metadata()
-        token = metadata.get("tokens", {}).get(str(appid))
-        key = metadata.get("keys", {}).get(str(appid))
-        
-        if token or key:
-            logger.log(f"SkyTools: Injecting metadata for {appid} (Token: {bool(token)}, Key: {bool(key)})")
-            # Update cache with metadata if found
-            cache.update_cached_app(appid, token=token, key=key)
-
         processed_lines = []
-        injected_appid = False
-        injected_token = False
-        injected_key = False
-
         for line in text.splitlines(True):
-            # Comment out any existing setManifestid
             if re.match(r"^\s*setManifestid\(", line) and not re.match(r"^\s*--", line):
                 line = re.sub(r"^(\s*)", r"\1--", line)
-            
-            # Use this opportunity to inject token/key if we haven't yet
-            if re.match(r"^\s*setAppID\(", line) and not injected_appid:
-                injected_appid = True
-                if token:
-                    processed_lines.append(f"setAccessToken('{token}')\n")
-                    injected_token = True
-                if key:
-                    # key often needs to be a depot:key map or similar, but here we assume game-level index
-                    # ManifestHub keys are often a single key or a map. We'll inject as comment if unsure
-                    processed_lines.append(f"-- Depot Key: {key}\n")
-                    injected_key = True
-
             processed_lines.append(line)
-        
-        # If setAppID wasn't found, add it at the start
-        if not injected_appid:
-            if token: processed_lines.insert(0, f"setAccessToken('{token}')\n")
-            processed_lines.insert(0, f"setAppID({appid})\n")
-            
         processed_text = "".join(processed_lines)
-        
-        # TRANSFORMATION: Robust compatibility for SteamTools scripts
-        # Polyfill for addappid (fallback safety)
-        polyfill = "if Steam and not addappid then addappid = function(id) Steam.AppId_Add(id) end end -- SkyTools Compat\n"
-        if not processed_text.startswith(polyfill):
-            processed_text = polyfill + processed_text
-            
-        # Inline translation (for performance and immediate fix)
-        processed_text = re.sub(r'addappid\s*\(\s*(\d+).*?\)', r'Steam.AppId_Add(\1)', processed_text, flags=re.IGNORECASE)
 
         _set_download_state(appid, {"status": "installing"})
         dest_file = os.path.join(target_dir, f"{appid}.lua")
-
         if _is_download_cancelled(appid):
             raise RuntimeError("cancelled")
-            
         with open(dest_file, "w", encoding="utf-8") as output:
             output.write(processed_text)
         logger.log(f"SkyTools: Installed lua -> {dest_file}")
-
-        
-        # Check for potential SteamTools interference
-        try:
-            steam_path = detect_steam_install_path() or Millennium.steam_path()
-            if steam_path:
-                steamtools_path = os.path.join(steam_path, "steamtools")
-                if os.path.exists(steamtools_path):
-                    logger.warn(f"SkyTools: SteamTools detected at {steamtools_path}. This may cause 'No licenses' errors. If you see installation errors, try disabling SteamTools temporarily.")
-        except Exception:
-            pass
-        
-        logger.log(f"SkyTools: Lua file installed successfully for appid {appid}. If Steam shows 'No licenses' error, it may be due to SteamTools or missing game license.")
         _set_download_state(appid, {"installedPath": dest_file})
 
     try:
@@ -501,49 +441,6 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
                     continue
         except Exception:
             pass
-
-
-def _create_basic_lua_file(appid: int) -> None:
-    """Create a basic Lua file for games not available on any API.
-    This is a fallback for Adult Only games and other games missing from APIs.
-    """
-    if _is_download_cancelled(appid):
-        raise RuntimeError("cancelled")
-    
-    base_path = detect_steam_install_path() or Millennium.steam_path()
-    if not base_path:
-        raise RuntimeError("Could not find Steam installation path")
-    
-    target_dir = os.path.join(base_path, "config", "stplug-in")
-    os.makedirs(target_dir, exist_ok=True)
-    
-    # Create a basic Lua file structure that matches SteamTools format
-    # This is a minimal but functional Lua script based on typical SteamTools structure
-    # The structure is based on what typical SteamTools Lua files contain
-    basic_lua_content = f"""-- Basic Lua file for appid {appid}
--- Generated by SkyTools (fallback for games not available on APIs)
--- This file allows the game to be added to Steam even if not in API databases
-
-setAppID({appid})
--- setManifestid() is commented out by default (as done in normal processing)
-
--- Note: This is a basic fallback file generated automatically.
--- For full functionality, the game should be available in the API databases.
--- If you encounter issues, you may need to manually configure this file or
--- wait for the game to be added to the API databases.
-"""
-    
-    _set_download_state(appid, {"status": "installing"})
-    dest_file = os.path.join(target_dir, f"{appid}.lua")
-    
-    if _is_download_cancelled(appid):
-        raise RuntimeError("cancelled")
-    
-    with open(dest_file, "w", encoding="utf-8") as output:
-        output.write(basic_lua_content)
-    
-    logger.log(f"SkyTools: Created basic lua file -> {dest_file}")
-    _set_download_state(appid, {"installedPath": dest_file})
 
 
 def _is_download_cancelled(appid: int) -> bool:
@@ -563,41 +460,6 @@ def _download_zip_for_app(appid: int):
 
     dest_root = ensure_temp_download_dir()
     dest_path = os.path.join(dest_root, f"{appid}.zip")
-    
-    # 1. Check Cache
-    cached = cache.get_cached_app(appid)
-    morrenus_fallback = None
-    
-    if cached and cached.get("mirror_url"):
-        current_mirror = cached["mirror_url"]
-        logger.log(f"SkyTools: Found cached entry for {appid}: {current_mirror}")
-        
-        if current_mirror.startswith("MORRENUS_AUTH"):
-             # It's a Morrenus entry - SAVE FOR LAST
-             url, auth_headers = morrenus.get_download_url_and_headers(appid)
-             morrenus_fallback = {
-                "name": "Morrenus (Credits)",
-                "url": url,
-                "headers": auth_headers,
-                "success_code": 200,
-                "unavailable_code": 403, # or 402?
-                "enabled": True
-             }
-        else:
-            # It's a standard free mirror - PRIORITIZE
-            cached_api = {
-                "name": "Cached Discovery",
-                "url": current_mirror,
-                "success_code": 200,
-                "unavailable_code": 404,
-                "enabled": True
-            }
-            apis = [cached_api] + [a for a in apis if a.get("url") != current_mirror]
-            
-    # Add Morrenus as the absolute final option if it was found in sync
-    if morrenus_fallback:
-        apis.append(morrenus_fallback)
-
     _set_download_state(
         appid,
         {"status": "checking", "currentApi": None, "bytesRead": 0, "totalBytes": 0, "dest": dest_path},
@@ -614,13 +476,11 @@ def _download_zip_for_app(appid: int):
         )
         logger.log(f"SkyTools: Trying API '{name}' -> {url}")
         try:
-            # Use specific headers if provided (e.g., for Morrenus), otherwise default
-            req_headers = api.get("headers") or {"User-Agent": USER_AGENT}
-            
+            headers = {"User-Agent": USER_AGENT}
             if _is_download_cancelled(appid):
                 logger.log(f"SkyTools: Download cancelled before contacting API '{name}'")
                 return
-            with client.stream("GET", url, headers=req_headers, follow_redirects=True) as resp:
+            with client.stream("GET", url, headers=headers, follow_redirects=True) as resp:
                 code = resp.status_code
                 logger.log(f"SkyTools: API '{name}' status={code}")
                 if code == unavailable_code:
@@ -680,10 +540,6 @@ def _download_zip_for_app(appid: int):
                     if _is_download_cancelled(appid):
                         logger.log(f"SkyTools: Processing aborted due to cancellation for appid={appid}")
                         raise RuntimeError("cancelled")
-                    
-                    # Update cache on success
-                    cache.update_cached_app(appid, mirror_url=template)
-                    
                     _set_download_state(appid, {"status": "processing"})
                     _process_and_install_lua(appid, dest_path)
                     if _is_download_cancelled(appid):
@@ -731,24 +587,7 @@ def _download_zip_for_app(appid: int):
             logger.warn(f"SkyTools: API '{name}' failed with error: {err}")
             continue
 
-    # If no API has the game, DO NOT create a basic Lua file.
-    # It has been observed to cause crashes for some AppIDs (e.g. 1631270).
-    # Better to fail the download than to brick the user's Steam.
-    logger.warn(f"SkyTools: No API has appid {appid}, and fallback Lua creation is DISABLED for safety.")
-    _set_download_state(appid, {"status": "failed", "error": "Not available on any API (Fallback disabled)"})
-    return
-    
-    # try:
-    #     _create_basic_lua_file(appid)
-    #     game_name = _fetch_app_name(appid) or f"UNKNOWN ({appid})"
-    #     _append_loaded_app(appid, game_name)
-    #     _log_appid_event("ADDED - Basic Lua (Fallback)", appid, game_name)
-    #     _set_download_state(appid, {"status": "done", "success": True, "api": "Basic Lua (Fallback)"})
-    #     logger.log(f"SkyTools: Created basic Lua file for appid {appid}")
-    #     return
-    # except Exception as fallback_exc:
-    #     logger.warn(f"SkyTools: Failed to create basic Lua file for {appid}: {fallback_exc}")
-    #     _set_download_state(appid, {"status": "failed", "error": "Not available on any API"})
+    _set_download_state(appid, {"status": "failed", "error": "Not available on any API"})
 
 
 def start_add_via_skytools(appid: int) -> str:
@@ -973,31 +812,3 @@ __all__ = [
     "start_add_via_skytools",
 ]
 
-
-def _ensure_compatibility_layer():
-    """Create a polyfill lua file to support SteamTools syntax (addappid) in Millennium."""
-    try:
-        base_path = detect_steam_install_path() or Millennium.steam_path()
-        if not base_path: return
-        
-        target_dir = os.path.join(base_path, "config", "stplug-in")
-        os.makedirs(target_dir, exist_ok=True)
-        
-        compat_file = os.path.join(target_dir, "_00_SkyTools_Compat.lua")
-        
-        content = """-- SkyTools Compatibility Layer
--- This allows scripts using SteamTools syntax (addappid) to run on Millennium without modification.
-
-if type(addappid) ~= "function" then
-    _G.addappid = function(appid, ...)
-        if Steam and Steam.AppId_Add then
-            Steam.AppId_Add(appid)
-        end
-    end
-end
-"""
-        with open(compat_file, "w", encoding="utf-8") as f:
-            f.write(content)
-            
-    except Exception as e:
-        logger.warn(f"SkyTools: Failed to create compatibility layer: {e}")

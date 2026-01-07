@@ -11,11 +11,7 @@ def get_backend_dir() -> str:
 def get_plugin_dir() -> str:
     """Return the absolute path to the root plugin directory."""
     backend_dir = get_backend_dir()
-    # Check for dev structure (backend and public are siblings)
-    if os.path.isdir(os.path.join(backend_dir, "..", "public")):
-        return os.path.abspath(os.path.join(backend_dir, ".."))
-    # Fallback to prod structure (backend content is at root, public is child)
-    return backend_dir
+    return os.path.abspath(os.path.join(backend_dir, ".."))
 
 
 def backend_path(filename: str) -> str:

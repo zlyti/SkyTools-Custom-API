@@ -67,7 +67,7 @@ def check_for_fixes(appid: int) -> str:
         result["gameName"] = f"Unknown Game ({appid})"
 
     try:
-        generic_url = f"https://files.luatools.work/GameBypasses/{appid}.zip"
+        generic_url = f"https://files.skytools.work/GameBypasses/{appid}.zip"
         resp = client.head(generic_url, follow_redirects=True, timeout=10)
         result["genericFix"]["status"] = resp.status_code
         result["genericFix"]["available"] = resp.status_code == 200
@@ -78,7 +78,7 @@ def check_for_fixes(appid: int) -> str:
         logger.warn(f"SkyTools: Generic fix check failed for {appid}: {exc}")
 
     try:
-        online_url = f"https://files.luatools.work/OnlineFix1/{appid}.zip"
+        online_url = f"https://files.skytools.work/OnlineFix1/{appid}.zip"
         resp = client.head(online_url, follow_redirects=True, timeout=10)
         logger.log(f"SkyTools: Online-fix check ({online_url}) for {appid} -> {resp.status_code}")
         result["onlineFix"]["status"] = resp.status_code
@@ -89,27 +89,6 @@ def check_for_fixes(appid: int) -> str:
         logger.warn(f"SkyTools: Online-fix check failed for {appid}: {exc}")
         if result["onlineFix"]["status"] == 0:
             result["onlineFix"]["status"] = 0
-
-    try:
-        # Check Custom API for FreeTP fix
-        freetp_url = f"https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/custom_api_kit/games/{appid}_freetp.zip"
-        
-        logger.info(f"Checking FreeTP URL: {freetp_url}") 
-        # We use a short timeout since it's a raw github check. disable verify for robustness against local cert issues
-        resp = client.head(freetp_url, follow_redirects=True, timeout=5) # removed verify=False as it might not be supported by wrapper, relying on default
-        # Actually client is ensure_http_client returns a httpx.Client or wrapper? 
-        # http_client.py says check_http_client returns client.
-        
-        logger.info(f"FreeTP Status: {resp.status_code}")
-        
-        # Github returns 200 for existing files
-        result["freeTp"] = {"status": resp.status_code, "available": resp.status_code == 200}
-        if resp.status_code == 200:
-            result["freeTp"]["url"] = freetp_url
-        logger.log(f"SkyTools: FreeTP check ({freetp_url}) for {appid} -> {resp.status_code}")
-    except Exception as exc:
-        logger.warn(f"SkyTools: FreeTP check failed for {appid}: {exc}")
-        result["freeTp"] = {"status": 0, "available": False}
 
     return json.dumps(result)
 
