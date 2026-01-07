@@ -3,7 +3,7 @@
   "name": "skytools",
   "common_name": "SkyTools",
   "description": "SkyTools Steam Plugin!",
-  "version": "6.4.41",
+  "version": "6.4.42",
   "include": [
     "public"
   ]
