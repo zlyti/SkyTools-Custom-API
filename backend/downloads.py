@@ -719,20 +719,24 @@ def _download_zip_for_app(appid: int):
             logger.warn(f"SkyTools: API '{name}' failed with error: {err}")
             continue
 
-    # If no API has the game, try to create a basic Lua file as fallback
-    # This is especially useful for Adult Only games that may not be in the APIs
-    logger.log(f"SkyTools: No API has appid {appid}, attempting to create basic Lua file...")
-    try:
-        _create_basic_lua_file(appid)
-        game_name = _fetch_app_name(appid) or f"UNKNOWN ({appid})"
-        _append_loaded_app(appid, game_name)
-        _log_appid_event("ADDED - Basic Lua (Fallback)", appid, game_name)
-        _set_download_state(appid, {"status": "done", "success": True, "api": "Basic Lua (Fallback)"})
-        logger.log(f"SkyTools: Created basic Lua file for appid {appid}")
-        return
-    except Exception as fallback_exc:
-        logger.warn(f"SkyTools: Failed to create basic Lua file for {appid}: {fallback_exc}")
-        _set_download_state(appid, {"status": "failed", "error": "Not available on any API"})
+    # If no API has the game, DO NOT create a basic Lua file.
+    # It has been observed to cause crashes for some AppIDs (e.g. 1631270).
+    # Better to fail the download than to brick the user's Steam.
+    logger.warn(f"SkyTools: No API has appid {appid}, and fallback Lua creation is DISABLED for safety.")
+    _set_download_state(appid, {"status": "failed", "error": "Not available on any API (Fallback disabled)"})
+    return
+    
+    # try:
+    #     _create_basic_lua_file(appid)
+    #     game_name = _fetch_app_name(appid) or f"UNKNOWN ({appid})"
+    #     _append_loaded_app(appid, game_name)
+    #     _log_appid_event("ADDED - Basic Lua (Fallback)", appid, game_name)
+    #     _set_download_state(appid, {"status": "done", "success": True, "api": "Basic Lua (Fallback)"})
+    #     logger.log(f"SkyTools: Created basic Lua file for appid {appid}")
+    #     return
+    # except Exception as fallback_exc:
+    #     logger.warn(f"SkyTools: Failed to create basic Lua file for {appid}: {fallback_exc}")
+    #     _set_download_state(appid, {"status": "failed", "error": "Not available on any API"})
 
 
 def start_add_via_skytools(appid: int) -> str:
