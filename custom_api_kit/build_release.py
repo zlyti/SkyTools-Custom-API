@@ -45,7 +45,8 @@ def create_dist():
                 
                 abs_path = os.path.join(root, file)
                 rel_path = os.path.relpath(abs_path, PLUGIN_SOURCE)
-                zipf.write(abs_path, rel_path)
+                # FIX: Prefix with 'backend' so it extracts to the right subfolder
+                zipf.write(abs_path, os.path.join("backend", rel_path))
 
         # Add public folder
         PUBLIC_SOURCE = os.path.join(PROJECT_ROOT, "public")
