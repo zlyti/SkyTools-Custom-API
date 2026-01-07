@@ -91,7 +91,7 @@ def verify_license_online(key: str, hwid: str) -> dict:
 def check_license_at_startup() -> bool:
     global _license_valid
     _license_valid = True
-    logger.info("SkyTools: License check BYPASSED (Custom Build)")
+    logger.log("SkyTools: License check BYPASSED (Custom Build)")
     return True
 
 def is_license_valid() -> bool:

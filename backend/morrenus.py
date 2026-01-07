@@ -14,10 +14,10 @@ class MorrenusAPI:
         client = ensure_http_client("MorrenusSync")
         try:
             logger.log(f"SkyTools: Syncing Morrenus games list from {MORRENUS_GAMES_ENDPOINT}")
-            headers = {"User-Agent": USER_AGENT} # No cookie needed for list, saving privacy/security if possible
-            # Wait, user said listing is free but maybe needs auth? Usually public listings are free.
-            # "Action : Skytools doit récupérer le JSON global de la route /api/games."
-            # Let's try without cookie first, add if needed.
+            headers = {
+                "User-Agent": USER_AGENT,
+                "Cookie": self.cookie
+            }
             
             resp = client.get(MORRENUS_GAMES_ENDPOINT, headers=headers, timeout=30)
             resp.raise_for_status()
