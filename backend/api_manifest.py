@@ -54,17 +54,17 @@ def init_apis(content_script_query: str = "") -> str:
             )
         except Exception as primary_err:
             logger.warn(f"InitApis: Primary URL failed ({primary_err}), trying proxy...")
-                try:
-                    logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
-                    resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
-                    resp.raise_for_status()
-                    manifest_text = resp.text
-                    logger.log(
-                        f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
-                    )
-                except Exception as proxy_err:
-                    logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
-                    raise primary_err
+            try:
+                logger.log(f"InitApis: Fetching manifest from proxy {API_MANIFEST_PROXY_URL}")
+                resp = client.get(API_MANIFEST_PROXY_URL, timeout=HTTP_PROXY_TIMEOUT_SECONDS)
+                resp.raise_for_status()
+                manifest_text = resp.text
+                logger.log(
+                    f"InitApis: Fetched manifest from proxy, status={resp.status_code}, length={len(manifest_text)}"
+                )
+            except Exception as proxy_err:
+                logger.warn(f"InitApis: Proxy also failed: {proxy_err}")
+                raise primary_err
         except Exception as fetch_err:
             logger.warn(f"InitApis: Failed to fetch free API manifest: {fetch_err}")
 
