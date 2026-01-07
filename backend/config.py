@@ -14,7 +14,7 @@ DEFAULT_HEADERS = {
     "Sec-Fetch-Site": "cross-site",
 }
 
-API_MANIFEST_URL = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/api.json"
+API_MANIFEST_URL = "https://raw.githubusercontent.com/BossSloth/LuaTools/main/api.json"
 API_MANIFEST_PROXY_URL = "https://skytools.vercel.app/load_free_manifest_apis"
 API_JSON_FILE = "api.json"
 
@@ -28,9 +28,9 @@ UPDATE_DOWNLOAD_TIMEOUT_SECONDS = 120  # 2 minutes pour les téléchargements de
 
 UPDATE_CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # 2 hours
 
-USER_AGENT = "skytools-v61-stplugin-hoe"
+USER_AGENT = "luatools-v61-stplugin-hoe"
 
-API_METADATA_URL = "https://raw.githubusercontent.com/zlyti/SkyTools-Custom-API/main/metadata.json"
+API_METADATA_URL = "https://raw.githubusercontent.com/BossSloth/LuaTools/main/metadata.json"
 API_METADATA_FILE = "metadata.json"
 CACHE_DB_FILE = "skytools_cache.db"
 
