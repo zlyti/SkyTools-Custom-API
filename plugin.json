@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/SteamClientHomebrew/Millennium/main/src/sys/plugin-schema.json",
   "name": "skytools",
   "common_name": "SkyTools",
-  "description": "SkyTools Steam Plugin!",
-  "version": "6.4.48",
+  "description": "LuaTools Steam Plugin - Ported to SkyTools",
+  "version": "6.4.49",
   "include": [
     "public"
   ]
