@@ -89,7 +89,6 @@ def init_apis(content_script_query: str = "") -> str:
     try:
         init_metadata()
     except Exception:
-    except Exception:
         pass
 
     # Also sync Morrenus games (Master Plan 4.0)
